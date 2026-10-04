@@ -1,0 +1,271 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="XZ Columnar Terrain | Aaron’s Dev Experiments">
+	<article class="article-page">
+		<header class="article-header">
+			<p class="eyebrow">
+				<a href="/areas/terrain-systems">Terrain Systems</a>
+			</p>
+
+			<h1>XZ Columnar Terrain</h1>
+
+			<p class="intro">
+				An experiment in constructing a sealed voxel-owned terrain
+				surface from heightmap-derived planar patches and vertical side
+				fragments.
+			</p>
+		</header>
+
+		<section class="article-content">
+			<h2>The Visual Inspiration</h2>
+
+			<p>
+				The original goal of this experiment was to build a genuinely 3D
+				voxel world that possessed the visual language of a tiled game.
+				Something akin to an old 2D tile-based game, but taken to an
+				extreme.
+			</p>
+
+			<p>
+				A large part of that idea came from tactical role-playing games
+				(SRPGs)—games like Disgaea and Final Fantasy Tactics. Games like
+				these make the underlying grid extremely easy to read. Movement,
+				elevation, and the relationship between neighboring spaces are
+				all communicated through discrete tiles.
+			</p>
+
+			<figure class="article-figure">
+				<img
+					src="/images/spectral-force-3-grid-reference.png"
+					alt="A tactical role-playing game battlefield with a continuous 
+					terrain surface and a visible movement grid overlaid on top."
+				/>
+
+				<figcaption>
+					<em>Spectral Force 3</em> uses a clearly readable tactical grid
+					over otherwise continuous terrain. Screenshot source:
+					{" "}
+					<a
+						href="https://gamefabrique.com/storage/screenshots/xbox360/spectral-force-3-innocent-rage-03.png"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						GameFabrique
+					</a>.
+				</figcaption>
+			</figure>
+
+			<p>
+				While older games tended to convey the grid through the terrain
+				itself, many modern examples use continuous terrain and
+				emphasize the grid through movement or targeting overlays. What
+				interested me was taking that visual language further. I wanted
+				the terrain surface itself to retain an obvious tiled structure,
+				even when no gameplay overlay was present.
+			</p>
+
+			<p>
+				The goal was not to hide the grid. I wanted the grid to be part
+				of the aesthetic.
+			</p>
+
+			<h2>The Goal</h2>
+
+			<p>
+				The visual idea only worked if the world remained genuinely
+				three-dimensional underneath it.
+			</p>
+
+			<p>
+				I did not set out to construct a conventional heightmap with a
+				tile grid drawn over the terrain. The long-term goal was a
+				volumetric world that could eventually support arbitrary
+				editing, caves, overhangs, tunnels, and other features that
+				cannot be represented by a simple height field.
+			</p>
+
+			<p>
+				That meant retaining voxels as the underlying spatial structure.
+				Individual voxels could be empty, filled, or intersected by the
+				terrain surface.
+			</p>
+
+			<p>
+				The interesting problem was what happened with those surface
+				voxels. Rather than exposing cube faces or allowing an arbitrary
+				smooth surface to pass through them, I wanted the visible
+				terrain to resolve into deliberate, flat, rectangular tiles.
+			</p>
+
+			<p>So the central question became:</p>
+
+			<p>
+				<em>
+					How can a continuous 3D terrain surface be approximated by
+					rectangular tiles without giving up the underlying voxel
+					structure?
+				</em>
+			</p>
+
+			<h2>The Split from Ordinary Voxel Terrain</h2>
+
+			<p>
+				A conventional block-based voxel world already solves several
+				difficult problems very neatly.
+			</p>
+
+			<p>
+				Each voxel has clear ownership. Editing is straightforward. The
+				world naturally forms a sealed volume, collision is relatively
+				simple, and the relationship between the underlying data and the
+				rendered geometry is easy to understand.
+			</p>
+
+			<p>
+				The problem was that the visual result was not what I was after.
+			</p>
+
+			<p>
+				I wanted to keep the useful structural properties of voxels
+				without being limited to their exposed faces. The surface needed
+				to move through the voxel grid rather than simply sit on top of
+				it.
+			</p>
+
+			<p>
+				At the same time, wherever that surface passed through the
+				world, I wanted it to resolve into flat, rectangular regions
+				rather than forming an arbitrary smooth surface.
+			</p>
+
+			<p>
+				That combination is what created the geometry problem that drove
+				the rest of the experiment.
+			</p>
+
+			<h2>Turning a Continuous Surface into Tiles</h2>
+
+			<p>
+				The first problem was reconciling a continuous terrain surface
+				with a discrete voxel grid. It is straightforward enough to
+				determine which voxels are intersected by the surface, but that
+				information alone is insufficient to construct the kind of
+				terrain I wanted.
+			</p>
+
+			<p>
+				Not every voxel touched by the surface is a good candidate for a
+				rectangular surface tile. In some cases, the surface passes
+				cleanly through much of the voxel. In others, only a tiny sliver
+				clips one corner or edge. Treating both cases as equivalent
+				“surface voxels” creates an immediate problem: there may not be
+				enough meaningful surface inside a given voxel to justify
+				replacing it with a full rectangular plane. Compounding this
+				issue, if you start picking and choosing which surface voxels
+				you want to use and which you want to throw away, you travel
+				further and further away from the original continuous
+				surface—not to mention from a complete surface at all.
+			</p>
+
+			<p>
+				I explored that problem separately for a while. One experiment
+				attempted to use the actual surface/voxel intersections
+				themselves to construct a usable surface representation. The
+				idea was appealing because it stayed closely tied to the
+				underlying geometry, but the resulting intersection shapes were
+				too irregular to satisfy the tiled-surface constraint. The
+				problem there can be summed up simply: when a plane intersects a
+				cube, the resulting polygon is often not rectangular. So then I
+				was right back to the problem of deciding which representations
+				to keep and which to throw away.
+			</p>
+
+			<p>
+				I then realized I needed a way to guarantee that a rectangular
+				surface could be generated. It also dawned on me that trying to
+				force an individual voxel to create one was probably not the
+				best approach, so I began to move away from treating individual
+				voxels as the unit from which the visible surface should be
+				constructed.
+			</p>
+
+			<p>
+				Toward that end, a heightmap offered a useful simplification.
+				Instead of considering one voxel at a time, I could consider an
+				entire vertical XZ column. Because a heightmap is continuous and
+				defines a single height at every XZ position, the terrain
+				surface is guaranteed to span the entire rectangular footprint
+				of the column.
+			</p>
+
+			<p>
+				That gave me something the individual-voxel approach could not:
+				a reliable rectangular domain with meaningful surface
+				information at all four corners.
+			</p>
+
+			<p>
+				All the while, there was one additional constraint that shaped
+				every approach I tried. I did not want a tile's surface
+				representation to depend on the surface representations
+				constructed by its neighbors. Each column needed to be capable
+				of determining its own surface independently from the terrain
+				information around it. Neighboring tiles should meet because
+				they were derived from the same underlying terrain field, not
+				because one tile had to inspect or modify another tile's
+				geometry. This was also meant to keep the algorithmic complexity
+				constrained while serving as a steppingstone toward a more
+				generalized version of the technique.
+			</p>
+
+			<p>
+				Once I had moved to columns, the next question became how to
+				reduce the continuous surface inside that rectangular footprint
+				to a single plane.
+			</p>
+
+			<p>
+				My first thought was to take the tangent plane of the original
+				continuous surface at the center of the column. That works, but
+				it only describes the behavior of the surface at one point. It
+				says very little about how the surface behaves across the rest
+				of the column.
+			</p>
+
+			<p>
+				I then tried several ways of using the four corner intersections
+				directly to construct a plane. The difficulty is that four
+				points sampled from a curved surface generally do not lie on the
+				same plane. Any single plane chosen from them necessarily throws
+				away some of the information contained in the original surface,
+				and the approaches I tried never really gave a great
+				approximation.
+			</p>
+
+			<p>
+				That eventually led to a different idea: instead of trying to
+				fit a plane directly to the raw samples, first construct a
+				smooth local surface over the column, and then derive the planar
+				tile from that approximation.
+			</p>
+
+			<p>That is where the bicubic patch entered the experiment.</p>
+		</section>
+
+		<section class="article-project">
+			<h2>Related Project</h2>
+
+			<a class="project-card" href="/projects/plane-voxel-lab">
+				<h3>Plane Voxel Lab</h3>
+
+				<p>
+					An experimental C++ / OpenGL lab for exploring voxel terrain
+					representation, surface construction, rendering, and
+					editable world systems.
+				</p>
+			</a>
+		</section>
+	</article>
+</BaseLayout>

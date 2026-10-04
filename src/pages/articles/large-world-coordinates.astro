@@ -1,0 +1,126 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Large-World Coordinates | Aaron’s Dev Experiments">
+	<article class="article-page">
+		<header class="article-header">
+			<p class="eyebrow">
+				<a href="/areas/spatial-world-systems">
+					Spatial & World Systems
+				</a>
+			</p>
+
+			<h1>Large-World Coordinates</h1>
+
+			<p class="intro">
+				Designing a coordinate system that preserves large-scale world
+				placement without sacrificing local floating-point precision.
+			</p>
+		</header>
+
+		<section class="article-content">
+			<p>
+				Large virtual worlds eventually run into a precision problem if
+				positions are represented only as large floating-point values.
+				As coordinates move farther from the origin, fewer bits remain
+				available for describing small local differences, which can
+				introduce instability into geometry, movement, and rendering.
+			</p>
+
+			<h2>The Coordinate Problem</h2>
+
+			<p>
+				Plane Voxel Lab originally used conventional world-space
+				coordinates for many operations. That works well near the
+				origin, but it creates an architectural problem once the world
+				is expected to extend across a much larger range.
+			</p>
+
+			<p>
+				The goal of the redesign was to preserve precise global
+				placement without forcing every local operation to use large
+				absolute coordinates.
+			</p>
+
+			<h2>Chunk + Local Position</h2>
+
+			<p>
+				The primary world-position representation separates position
+				into two parts: an integer chunk coordinate and a bounded
+				floating-point position inside that chunk.
+			</p>
+
+			<p>
+				The chunk coordinate carries the large-scale location, while the
+				local position remains small enough for ordinary floating-point
+				arithmetic. This keeps rendering, mesh generation, and nearby
+				spatial calculations working with values that remain close to
+				the local origin.
+			</p>
+
+			<h2>Absolute Metric Coordinates</h2>
+
+			<p>
+				Some systems still need a stable absolute coordinate along a
+				single axis. Procedural terrain sampling is one example:
+				neighboring chunks must produce continuous noise even though
+				each chunk performs most of its work in local coordinates.
+			</p>
+
+			<p>
+				For those cases, the lab uses a separate metric-coordinate
+				representation containing an integer number of whole meters and
+				a fractional-meter component. This allows global scalar
+				coordinates to remain stable without reconstructing a giant
+				floating-point world position.
+			</p>
+
+			<h2>Camera-Relative Rendering</h2>
+
+			<p>
+				The same idea extends naturally to rendering. Rather than
+				passing large absolute positions to the GPU, chunk positions are
+				first expressed relative to the camera's current chunk. Local
+				mesh vertices are then combined with that nearby chunk offset
+				and the camera's local position.
+			</p>
+
+			<p>
+				The final values used by the renderer therefore stay relatively
+				small, even when the camera itself is located very far from the
+				world origin.
+			</p>
+
+			<h2>What Changed</h2>
+
+			<p>
+				The refactor affected more than the camera. Density fields,
+				procedural noise, heightmap sampling, terrain mesh construction,
+				debug rendering, and experiment code all had to agree on the
+				same coordinate model.
+			</p>
+
+			<p>
+				The result is a clearer separation between global placement and
+				local computation. Large distances are handled with integer
+				coordinates, while floating-point values are reserved for the
+				small-scale work they are best suited for.
+			</p>
+		</section>
+
+		<section class="article-project">
+			<h2>Related Project</h2>
+
+			<a class="project-card" href="/projects/plane-voxel-lab">
+				<h3>Plane Voxel Lab</h3>
+
+				<p>
+					An experimental C++ / OpenGL lab for exploring voxel terrain
+					representation, surface construction, rendering, and
+					editable world systems.
+				</p>
+			</a>
+		</section>
+	</article>
+</BaseLayout>

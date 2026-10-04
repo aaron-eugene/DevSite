@@ -1,17 +1,60 @@
 ---
-
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Aaron’s Dev Experiments">
+	<section class="hero">
+		<p class="eyebrow">Graphics / Terrain Experiments / Game Development</p>
+
+		<h1>
+			A personal dev lab for documenting experiments, prototypes, and
+			technical dead ends.
+		</h1>
+
+		<p class="intro">
+			This site is a living technical notebook for my hobby programming
+			work. It is where I document terrain research, graphics prototypes,
+			renderer work, debugging tools, and design tradeoffs.
+		</p>
+	</section>
+
+	<section class="areas-preview">
+		<h2>Technical Areas</h2>
+
+		<div class="area-grid">
+			<a class="area-card" href="/areas/terrain-systems">
+				<h3>Terrain Systems</h3>
+				<p>
+					Research into terrain representation, surface construction,
+					density fields, topology, and approaches to editable world
+					geometry.
+				</p>
+			</a>
+
+			<a class="area-card" href="/areas/rendering">
+				<h3>Rendering</h3>
+				<p>
+					Experiments with OpenGL rendering, shaders, lighting,
+					texturing, camera systems, and visual presentation.
+				</p>
+			</a>
+
+			<a class="area-card" href="/areas/spatial-world-systems">
+				<h3>Spatial & World Systems</h3>
+				<p>
+					Work on coordinate systems, chunk organization, large-world
+					precision, procedural sampling, and spatial relationships.
+				</p>
+			</a>
+
+			<a class="area-card" href="/areas/tools-debugging">
+				<h3>Tools / Debugging</h3>
+				<p>
+					Debug views, diagnostic overlays, development controls,
+					profiling tools, and workflow improvements that support
+					experimentation.
+				</p>
+			</a>
+		</div>
+	</section>
+</BaseLayout>
