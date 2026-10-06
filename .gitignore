@@ -26,3 +26,15 @@ pnpm-debug.log*
 
 # VS Code local settings
 .vscode/
+
+# Python virtual environments
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Python tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
