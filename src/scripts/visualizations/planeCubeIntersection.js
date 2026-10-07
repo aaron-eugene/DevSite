@@ -99,19 +99,6 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 		epsilon
 	);
 
-	// DEBUG
-	const {
-		positiveCount,
-		negativeCount,
-		onPlaneCount
-	} = distanceCounts;
-
-	console.log({
-		positiveCount,
-		negativeCount,
-		onPlaneCount
-	});
-
 	//--------------------------------------------------------
 	// Test for Intersection
 	//--------------------------------------------------------
@@ -324,8 +311,14 @@ const plane = new THREE.Plane(planeNormal, 0);
 // Intersection Geometry
 //========================================================
 
-const intersection = calculatePlaneCubeIntersection(
-	plane, cubeVertices, cubeEdges
+const {
+	points,
+	intersectionType,
+	isDegenerate
+} = calculatePlaneCubeIntersection(
+	plane,
+	cubeVertices,
+	cubeEdges
 );
 
 //========================================================
