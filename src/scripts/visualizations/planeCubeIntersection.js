@@ -105,8 +105,7 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 	if (!hasPlaneCubeIntersection(distanceCounts)) {
 		return {
 			points: [],
-			intersectionType: "none",
-			isDegenerate: false
+			intersectionType: "none"
 		};
 	}
 
@@ -173,8 +172,7 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 
 		return {
 			points: intersectionPoints,
-			intersectionType,
-			isDegenerate: true
+			intersectionType
 		};
 	}
 
@@ -216,9 +214,119 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 
 	return {
 		points: sortedPoints,
-		intersectionType: "polygon",
-		isDegenerate: false
+		intersectionType: "polygon"
 	};
+}
+
+function createIntersectionGeometry() {
+	const maxVertices = 6;
+	const maxIndices = 12;
+
+	const positions = new Float32Array(maxVertices * 3);
+	const indices = new Uint16Array(maxIndices);
+
+	const geometry = new THREE.BufferGeometry();
+
+	geometry.setAttribute(
+		"position",
+		new THREE.BufferAttribute(positions, 3)
+	);
+
+	geometry.setIndex(
+		new THREE.BufferAttribute(indices, 1)
+	);
+
+	// Render nothing until valid polygon data is supplied.
+	geometry.setDrawRange(0, 0);
+
+	return geometry;
+}
+
+function createIntersectionEdgeGeometry() {
+	const maxVertices = 6;
+
+	const positions = new Float32Array(
+		maxVertices * 3
+	);
+
+	const geometry = new THREE.BufferGeometry();
+
+	geometry.setAttribute(
+		"position",
+		new THREE.BufferAttribute(positions, 3)
+	);
+
+	geometry.setDrawRange(0, 0);
+
+	return geometry;
+}
+
+function updateIntersectionGeometry(geometry, points) {
+	if (points.length < 3) {
+		geometry.setDrawRange(0, 0);
+		return;
+	}
+
+	const positionAttribute = geometry.getAttribute("position");
+	const indexAttribute = geometry.getIndex();
+
+	//--------------------------------------------------------
+	// Update Vertex Positions
+	//--------------------------------------------------------
+	for (let i = 0; i < points.length; i++) {
+		positionAttribute.setXYZ(
+			i,
+			points[i].x,
+			points[i].y,
+			points[i].z
+		);
+	}
+
+	positionAttribute.needsUpdate = true;
+
+	//--------------------------------------------------------
+	// Build Triangle Fan
+	//--------------------------------------------------------
+	let indexCount = 0;
+
+	for (let i = 1; i < points.length - 1; i++) {
+		indexAttribute.setX(indexCount++, 0);
+		indexAttribute.setX(indexCount++, i);
+		indexAttribute.setX(indexCount++, i + 1);
+	}
+
+	indexAttribute.needsUpdate = true;
+
+	//--------------------------------------------------------
+	// Render Only Active Triangles
+	//--------------------------------------------------------
+	geometry.setDrawRange(0, indexCount);
+}
+
+function updateIntersectionEdgeGeometry(geometry, points) {
+	if (points.length < 3) {
+		geometry.setDrawRange(0, 0);
+		return;
+	}
+
+	const positionAttribute =
+		geometry.getAttribute("position");
+
+	for (let i = 0; i < points.length; i++) {
+		positionAttribute.setXYZ(
+			i,
+			points[i].x,
+			points[i].y,
+			points[i].z
+		);
+	}
+
+	positionAttribute.needsUpdate = true;
+
+	geometry.setDrawRange(
+		0,
+		points.length
+	);
 }
 
 //========================================================
@@ -313,8 +421,7 @@ const plane = new THREE.Plane(planeNormal, 0);
 
 const {
 	points,
-	intersectionType,
-	isDegenerate
+	intersectionType
 } = calculatePlaneCubeIntersection(
 	plane,
 	cubeVertices,
@@ -342,6 +449,12 @@ const planeEdgesGeo = new THREE.EdgesGeometry(
 	planeGeo
 );
 
+const intersectionGeo = createIntersectionGeometry();
+updateIntersectionGeometry(intersectionGeo, points);
+
+const intersectionEdgesGeo = createIntersectionEdgeGeometry();
+updateIntersectionEdgeGeometry(intersectionEdgesGeo, points);
+
 //========================================================
 // Materials
 //========================================================
@@ -362,6 +475,17 @@ const planeMaterial = new THREE.MeshBasicMaterial({
 
 const planeEdgeMaterial = new THREE.LineBasicMaterial({
 	color: 0x92bef7
+});
+
+const intersectionMaterial = new THREE.MeshBasicMaterial({
+	color: 0x6ebe8a,
+	side: THREE.DoubleSide,
+	transparent: true,
+	opacity: 0.35
+});
+
+const intersectionEdgeMaterial = new THREE.LineBasicMaterial({
+	color: 0x91fab6
 });
 
 //========================================================
@@ -387,6 +511,21 @@ const planeGroup = new THREE.Group();
 
 planeGroup.add(planeMesh);
 planeGroup.add(planeWireframe);
+
+const intersectionMesh = new THREE.Mesh(
+	intersectionGeo,
+	intersectionMaterial
+);
+
+const intersectionWireframe = new THREE.LineLoop(
+	intersectionEdgesGeo,
+	intersectionEdgeMaterial
+);
+
+const intersectionGroup = new THREE.Group();
+
+intersectionGroup.add(intersectionMesh);
+intersectionGroup.add(intersectionWireframe);
 
 //========================================================
 // Plane Visualization
@@ -424,6 +563,7 @@ updatePlaneVisualization();
 
 scene.add(cubeWireframe);
 scene.add(planeGroup);
+scene.add(intersectionGroup);
 
 //========================================================
 // Animation Loop
