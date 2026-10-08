@@ -2,7 +2,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 //========================================================
-// Helper Functions
+// Geometry Constants
+//========================================================
+
+const INTERSECTION_EPSILON = 1e-8;
+const MAX_INTERSECTION_VERTICES = 6;
+
+//========================================================
+// Geometry Helpers
 //========================================================
 
 function buildPlaneBasis(normal) {
@@ -27,7 +34,7 @@ function buildPlaneBasis(normal) {
 	return { planeU, planeV };
 }
 
-function signedDistancesToPlane(plane, vertices, epsilon) {
+function signedDistancesToPlane(plane, vertices) {
 	let positiveCount = 0;
 	let negativeCount = 0;
 	let onPlaneCount = 0;
@@ -35,10 +42,10 @@ function signedDistancesToPlane(plane, vertices, epsilon) {
 	for (const vertex of vertices) {
 		const distance = plane.distanceToPoint(vertex);
 
-		if (distance > epsilon) {
+		if (distance > INTERSECTION_EPSILON) {
 			positiveCount++;
 		}
-		else if (distance < -epsilon) {
+		else if (distance < -INTERSECTION_EPSILON) {
 			negativeCount++;
 		}
 		else {
@@ -75,9 +82,10 @@ function hasPlaneCubeIntersection(distanceCounts) {
 	return true;
 }
 
-function addUniquePoint(points, point, epsilon) {
+function addUniquePoint(points, point) {
 	for (const existingPoint of points) {
-		if (existingPoint.distanceToSquared(point) <= epsilon * epsilon) {
+		if (existingPoint.distanceToSquared(point) <=
+			INTERSECTION_EPSILON * INTERSECTION_EPSILON) {
 			return;
 		}
 	}
@@ -88,15 +96,12 @@ function addUniquePoint(points, point, epsilon) {
 function calculatePlaneCubeIntersection(plane, vertices, edges) {
 	const intersectionPoints = [];
 
-	const epsilon = 1e-8;
-
 	//--------------------------------------------------------
 	// Signed Distances to Plane
 	//--------------------------------------------------------
 	const distanceCounts = signedDistancesToPlane(
 		plane,
 		vertices,
-		epsilon
 	);
 
 	//--------------------------------------------------------
@@ -119,26 +124,29 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 		const startDistance = plane.distanceToPoint(start);
 		const endDistance = plane.distanceToPoint(end);
 
-		const startOnPlane = Math.abs(startDistance) <= epsilon;
-		const endOnPlane = Math.abs(endDistance) <= epsilon;
+		const startOnPlane = Math.abs(startDistance) <= INTERSECTION_EPSILON;
+
+		const endOnPlane = Math.abs(endDistance) <= INTERSECTION_EPSILON;
 
 		// Entire edge lies in the plane
 		if (startOnPlane && endOnPlane) {
-			addUniquePoint(intersectionPoints, start, epsilon);
-			addUniquePoint(intersectionPoints, end, epsilon);
+			addUniquePoint(intersectionPoints, start);
+			addUniquePoint(intersectionPoints, end);
 		}
 		// Plane passes through the start vertex
 		else if (startOnPlane) {
-			addUniquePoint(intersectionPoints, start, epsilon);
+			addUniquePoint(intersectionPoints, start);
 		}
 		// Plane passes through the end vertex
 		else if (endOnPlane) {
-			addUniquePoint(intersectionPoints, end, epsilon);
+			addUniquePoint(intersectionPoints, end);
 		}
 		// Edge crosses the plane between its endpoints.
 		else if (
-			(startDistance > epsilon && endDistance < -epsilon) ||
-			(startDistance < -epsilon && endDistance > epsilon)
+			(startDistance > INTERSECTION_EPSILON &&
+				endDistance < -INTERSECTION_EPSILON) ||
+			(startDistance < -INTERSECTION_EPSILON &&
+				endDistance > INTERSECTION_EPSILON)
 		) {
 			const interp =
 				startDistance /
@@ -151,8 +159,7 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 
 			addUniquePoint(
 				intersectionPoints,
-				intersection,
-				epsilon
+				intersection
 			);
 		}
 	}
@@ -218,11 +225,15 @@ function calculatePlaneCubeIntersection(plane, vertices, edges) {
 	};
 }
 
-function createIntersectionGeometry() {
-	const maxVertices = 6;
-	const maxIndices = 12;
+//========================================================
+// Render Geometry Helpers
+//========================================================
 
-	const positions = new Float32Array(maxVertices * 3);
+function createIntersectionGeometry() {
+	const maxIndices =
+		(MAX_INTERSECTION_VERTICES - 2) * 3;
+
+	const positions = new Float32Array(MAX_INTERSECTION_VERTICES * 3);
 	const indices = new Uint16Array(maxIndices);
 
 	const geometry = new THREE.BufferGeometry();
@@ -243,10 +254,9 @@ function createIntersectionGeometry() {
 }
 
 function createIntersectionEdgeGeometry() {
-	const maxVertices = 6;
 
 	const positions = new Float32Array(
-		maxVertices * 3
+		MAX_INTERSECTION_VERTICES * 3
 	);
 
 	const geometry = new THREE.BufferGeometry();
@@ -330,11 +340,172 @@ function updateIntersectionEdgeGeometry(geometry, points) {
 }
 
 //========================================================
+// Visualization Update Functions
+//========================================================
+
+function updatePlaneFromState() {
+	const azimuth = THREE.MathUtils.degToRad(
+		planeAzimuthDegrees
+	);
+
+	const elevation = THREE.MathUtils.degToRad(
+		planeElevationDegrees
+	);
+
+	const cosElevation = Math.cos(elevation);
+
+	plane.normal.set(
+		cosElevation * Math.sin(azimuth),
+		Math.sin(elevation),
+		cosElevation * Math.cos(azimuth)
+	);
+
+	plane.constant = -planeOffset;
+}
+
+function updatePlaneVisualization() {
+	plane.coplanarPoint(
+		planeRenderPosition
+	);
+
+	planeRenderRotation.setFromUnitVectors(
+		defaultPlaneNormal,
+		plane.normal
+	);
+
+	planeGroup.position.copy(
+		planeRenderPosition
+	);
+
+	planeGroup.quaternion.copy(
+		planeRenderRotation
+	);
+}
+
+function updateIntersectionVisualization() {
+	intersectionResult =
+		calculatePlaneCubeIntersection(
+			plane,
+			cubeVertices,
+			cubeEdges
+		);
+
+	updateIntersectionGeometry(
+		intersectionGeo,
+		intersectionResult.points
+	);
+
+	updateIntersectionEdgeGeometry(
+		intersectionEdgesGeo,
+		intersectionResult.points
+	);
+}
+
+function updateIntersectionStatusDisplay() {
+	const pointCount =
+		intersectionResult.points.length;
+
+	if (
+		intersectionResult.intersectionType === "polygon"
+	) {
+		intersectionStatus.textContent =
+			`Polygon · ${pointCount} vertices`;
+	}
+	else {
+		intersectionStatus.textContent =
+			intersectionResult.intersectionType;
+	}
+}
+
+function updatePlaneControls() {
+	planeOffsetSlider.value =
+		planeOffset;
+
+	planeAzimuthSlider.value =
+		planeAzimuthDegrees;
+
+	planeElevationSlider.value =
+		planeElevationDegrees;
+
+	planeOffsetValue.textContent =
+		planeOffset.toFixed(2);
+
+	planeAzimuthValue.textContent =
+		`${planeAzimuthDegrees.toFixed(0)}°`;
+
+	planeElevationValue.textContent =
+		`${planeElevationDegrees.toFixed(0)}°`;
+}
+
+function updateVisualization() {
+	updatePlaneFromState();
+	updatePlaneVisualization();
+	updateIntersectionVisualization();
+	updateIntersectionStatusDisplay();
+}
+
+//========================================================
 // Viewport
 //========================================================
 
-const width = 640;
-const height = 480;
+const viewport =
+	document.querySelector("#viewport");
+
+if (viewport === null) {
+	throw new Error(
+		"Viewport was not found."
+	);
+}
+
+const width = viewport.clientWidth;
+const height = viewport.clientHeight;
+
+//========================================================
+// UI Controls
+//========================================================
+
+const planeOffsetSlider =
+	document.querySelector("#plane-offset");
+
+const planeAzimuthSlider =
+	document.querySelector("#plane-azimuth");
+
+const planeElevationSlider =
+	document.querySelector("#plane-elevation");
+
+const planeOffsetValue =
+	document.querySelector("#plane-offset-value");
+
+const planeAzimuthValue =
+	document.querySelector("#plane-azimuth-value");
+
+const planeElevationValue =
+	document.querySelector("#plane-elevation-value");
+
+const resetPlaneButton =
+	document.querySelector("#reset-plane");
+
+const resetCameraButton =
+	document.querySelector("#reset-camera");
+
+const intersectionStatus =
+	document.querySelector("#intersection-status");
+
+if (
+	planeOffsetSlider === null ||
+	planeAzimuthSlider === null ||
+	planeElevationSlider === null ||
+	planeOffsetValue === null ||
+	planeAzimuthValue === null ||
+	planeElevationValue === null ||
+	resetPlaneButton === null ||
+	resetCameraButton === null ||
+	intersectionStatus === null
+) {
+	throw new Error(
+		"Plane/cube visualization controls were not found."
+	);
+}
 
 //========================================================
 // Scene & Camera
@@ -361,7 +532,7 @@ const renderer = new THREE.WebGLRenderer({
 
 renderer.setSize(width, height);
 
-document.body.appendChild(renderer.domElement);
+viewport.appendChild(renderer.domElement);
 
 //========================================================
 // Camera Controls
@@ -373,6 +544,7 @@ const controls = new OrbitControls(
 );
 
 controls.update();
+controls.saveState();
 
 //========================================================
 // Cube Geometry
@@ -408,25 +580,31 @@ const cubeEdges = [
 ];
 
 //========================================================
+// Plane Control State
+//========================================================
+
+const DEFAULT_PLANE_OFFSET = 0.0;
+const DEFAULT_PLANE_AZIMUTH = 180.0;
+const DEFAULT_PLANE_ELEVATION = 45.0;
+
+let planeOffset = DEFAULT_PLANE_OFFSET;
+let planeAzimuthDegrees = DEFAULT_PLANE_AZIMUTH;
+let planeElevationDegrees = DEFAULT_PLANE_ELEVATION;
+
+//========================================================
 // Plane Geometry
 //========================================================
 
-const planeNormal = new THREE.Vector3(0, 1, -1).normalize();
-
-const plane = new THREE.Plane(planeNormal, 0);
+const plane = new THREE.Plane();
 
 //========================================================
 // Intersection Geometry
 //========================================================
 
-const {
-	points,
-	intersectionType
-} = calculatePlaneCubeIntersection(
-	plane,
-	cubeVertices,
-	cubeEdges
-);
+let intersectionResult = {
+	points: [],
+	intersectionType: "none"
+};
 
 //========================================================
 // Rendering Geometry
@@ -449,11 +627,11 @@ const planeEdgesGeo = new THREE.EdgesGeometry(
 	planeGeo
 );
 
-const intersectionGeo = createIntersectionGeometry();
-updateIntersectionGeometry(intersectionGeo, points);
+const intersectionGeo =
+	createIntersectionGeometry();
 
-const intersectionEdgesGeo = createIntersectionEdgeGeometry();
-updateIntersectionEdgeGeometry(intersectionEdgesGeo, points);
+const intersectionEdgesGeo =
+	createIntersectionEdgeGeometry();
 
 //========================================================
 // Materials
@@ -528,34 +706,81 @@ intersectionGroup.add(intersectionMesh);
 intersectionGroup.add(intersectionWireframe);
 
 //========================================================
-// Plane Visualization
+// Visualization State & Initialization
 //========================================================
 
-const defaultPlaneNormal = new THREE.Vector3(0, 0, 1);
+const defaultPlaneNormal =
+	new THREE.Vector3(0, 0, 1);
 
-const planeRenderPosition = new THREE.Vector3();
-const planeRenderRotation = new THREE.Quaternion();
+const planeRenderPosition =
+	new THREE.Vector3();
 
-function updatePlaneVisualization() {
-	plane.coplanarPoint(
-		planeRenderPosition
-	);
+const planeRenderRotation =
+	new THREE.Quaternion();
 
-	planeRenderRotation.setFromUnitVectors(
-		defaultPlaneNormal,
-		plane.normal
-	);
+updatePlaneControls();
+updateVisualization();
 
-	planeGroup.position.copy(
-		planeRenderPosition
-	);
+//========================================================
+// UI Event Handlers
+//========================================================
 
-	planeGroup.quaternion.copy(
-		planeRenderRotation
-	);
-}
+planeOffsetSlider.addEventListener(
+	"input",
+	() => {
+		planeOffset =
+			Number(planeOffsetSlider.value);
 
-updatePlaneVisualization();
+		updatePlaneControls();
+		updateVisualization();
+	}
+);
+
+planeAzimuthSlider.addEventListener(
+	"input",
+	() => {
+		planeAzimuthDegrees =
+			Number(planeAzimuthSlider.value);
+
+		updatePlaneControls();
+		updateVisualization();
+	}
+);
+
+planeElevationSlider.addEventListener(
+	"input",
+	() => {
+		planeElevationDegrees =
+			Number(planeElevationSlider.value);
+
+		updatePlaneControls();
+		updateVisualization();
+	}
+);
+
+resetPlaneButton.addEventListener(
+	"click",
+	() => {
+		planeOffset =
+			DEFAULT_PLANE_OFFSET;
+
+		planeAzimuthDegrees =
+			DEFAULT_PLANE_AZIMUTH;
+
+		planeElevationDegrees =
+			DEFAULT_PLANE_ELEVATION;
+
+		updatePlaneControls();
+		updateVisualization();
+	}
+);
+
+resetCameraButton.addEventListener(
+	"click",
+	() => {
+		controls.reset();
+	}
+);
 
 //========================================================
 // Scene Assembly
