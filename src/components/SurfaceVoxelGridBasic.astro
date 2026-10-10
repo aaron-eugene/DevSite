@@ -1,0 +1,69 @@
+<div class="surface-voxel-grid">
+	<div class="viewport"></div>
+
+	<div class="controls">
+		<label>
+			<span class="control-header">
+				<span>Surface Variation</span>
+				<span class="surface-variation-value">0.00</span>
+			</span>
+
+			<input
+				class="surface-variation"
+				type="range"
+				min="-10.0"
+				max="10.0"
+				step="0.5"
+				value="0"
+			/>
+		</label>
+
+		<button class="toggle-surface"> Toggle Surface </button>
+
+		<button class="toggle-surface-voxels"> Toggle Surface Voxels </button>
+
+		<button class="reset-camera"> Reset Camera </button>
+
+		<div class="num-surface-voxels"></div>
+	</div>
+</div>
+
+<style>
+	.surface-voxel-grid {
+		display: flex;
+		align-items: flex-start;
+		gap: 24px;
+	}
+
+	.viewport {
+		width: 640px;
+		aspect-ratio: 4 / 3;
+	}
+
+	.controls {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		min-width: 220px;
+	}
+
+	.controls label {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.control-header {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.controls input[type="range"] {
+		width: 100%;
+	}
+</style>
+
+<script>
+	import "../scripts/visualizations/surfaceVoxelGridBasic.js";
+</script>
