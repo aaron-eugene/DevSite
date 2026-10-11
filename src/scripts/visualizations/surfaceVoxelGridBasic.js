@@ -14,16 +14,16 @@ const GRID_SIZE_X = 5;
 const GRID_SIZE_Y = 5;
 const GRID_SIZE_Z = 5;
 
-const HALF_GRID_X = GRID_SIZE_X * VOXEL_SIZE * 0.5;
-const HALF_GRID_Y = GRID_SIZE_Y * VOXEL_SIZE * 0.5;
-const HALF_GRID_Z = GRID_SIZE_Z * VOXEL_SIZE * 0.5;
+const GRID_HALF_EXTENT_X = GRID_SIZE_X * VOXEL_SIZE * 0.5;
+const GRID_HALF_EXTENT_Y = GRID_SIZE_Y * VOXEL_SIZE * 0.5;
+const GRID_HALF_EXTENT_Z = GRID_SIZE_Z * VOXEL_SIZE * 0.5;
 
 //--------------------------------------------------------
 // Terrain
 //--------------------------------------------------------
-const BASE_HEIGHT = 0.0;
+const TERRAIN_BASE_HEIGHT = 0.0;
 const TERRAIN_AMPLITUDE = 0.75;
-const FREQUENCY = 0.7;
+const TERRAIN_FREQUENCY = 0.7;
 
 const TERRAIN_SAMPLE_SPACING = 0.25;
 
@@ -34,7 +34,16 @@ const TERRAIN_SAMPLE_SPACING = 0.25;
 function initializeSurfaceVoxelGrid(visualizationRoot) {
 
 	//========================================================
-	// Terrain Helper Functions
+	// Visualization State
+	//========================================================
+
+	let terrainOffset = -10.0;
+	let terrainDirty = false;
+
+	const surfaceVoxels = [];
+
+	//========================================================
+	// Terrain Helpers
 	//========================================================
 
 	function sampleTerrainHeight(x, z) {
@@ -44,11 +53,183 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 		const sampleZ =
 			z + terrainOffset * 0.6;
 
-		return BASE_HEIGHT +
+		return TERRAIN_BASE_HEIGHT +
 			TERRAIN_AMPLITUDE * (
-				Math.sin(sampleX * FREQUENCY) +
-				0.5 * Math.cos(sampleZ * FREQUENCY * 0.8)
+				Math.sin(sampleX * TERRAIN_FREQUENCY) +
+				0.5 * Math.cos(sampleZ * TERRAIN_FREQUENCY * 0.8)
 			);
+	}
+
+	function updateTerrainSurface() {
+		for (let z = 0; z < sampleCountZ; z++) {
+			for (let x = 0; x < sampleCountX; x++) {
+				const vertexIndex =
+					z * sampleCountX + x;
+
+				const positionIndex =
+					vertexIndex * 3;
+
+				const worldX =
+					terrainPositions[positionIndex];
+
+				const worldZ =
+					terrainPositions[positionIndex + 2];
+
+				terrainPositions[positionIndex + 1] =
+					sampleTerrainHeight(
+						worldX,
+						worldZ
+					);
+			}
+		}
+
+		terrainPositionAttribute.needsUpdate = true;
+
+		terrainGeo.computeVertexNormals();
+
+		updateSurfaceVoxels();
+		updateSurfaceVoxelGeometry();
+
+		numSurfaceVoxels.textContent =
+			`Surface Voxels: ${surfaceVoxels.length}`;
+	}
+
+	//========================================================
+	// Surface Voxel Helpers
+	//========================================================
+
+	function updateSurfaceVoxels() {
+		const samplesPerVoxel =
+			VOXEL_SIZE /
+			TERRAIN_SAMPLE_SPACING;
+
+		if (!Number.isInteger(samplesPerVoxel)) {
+			throw new Error(
+				"TERRAIN_SAMPLE_SPACING must divide VOXEL_SIZE evenly."
+			);
+		}
+
+		surfaceVoxels.length = 0;
+
+		for (let voxelZ = 0; voxelZ < GRID_SIZE_Z; voxelZ++) {
+			for (let voxelX = 0; voxelX < GRID_SIZE_X; voxelX++) {
+				const startSampleX =
+					voxelX * samplesPerVoxel;
+
+				const startSampleZ =
+					voxelZ * samplesPerVoxel;
+
+				let minHeight = Infinity;
+				let maxHeight = -Infinity;
+
+				//--------------------------------------------------------
+				// Find Min/Max Height in Voxel Column
+				//--------------------------------------------------------
+				for (
+					let sampleZ = startSampleZ;
+					sampleZ <= startSampleZ + samplesPerVoxel;
+					sampleZ++
+				) {
+					for (
+						let sampleX = startSampleX;
+						sampleX <= startSampleX + samplesPerVoxel;
+						sampleX++
+					) {
+						const vertexIndex =
+							sampleZ * sampleCountX +
+							sampleX;
+
+						const positionIndex =
+							vertexIndex * 3;
+
+						const sampleY =
+							terrainPositions[
+							positionIndex + 1
+							];
+
+						minHeight =
+							Math.min(
+								minHeight,
+								sampleY
+							);
+
+						maxHeight =
+							Math.max(
+								maxHeight,
+								sampleY
+							);
+					}
+				}
+
+				//--------------------------------------------------------
+				// Classify Voxels By Min/Max Height
+				//--------------------------------------------------------
+				for (
+					let voxelY = 0;
+					voxelY < GRID_SIZE_Y;
+					voxelY++
+				) {
+					const voxelMinY =
+						-GRID_HALF_EXTENT_Y +
+						voxelY * VOXEL_SIZE;
+
+					const voxelMaxY =
+						voxelMinY + VOXEL_SIZE;
+
+					if (
+						maxHeight >= voxelMinY &&
+						minHeight <= voxelMaxY
+					) {
+						surfaceVoxels.push({
+							x: voxelX,
+							y: voxelY,
+							z: voxelZ
+						});
+					}
+				}
+			}
+		}
+	}
+
+	function updateSurfaceVoxelGeometry() {
+		let positionIndex = 0;
+
+		for (const voxel of surfaceVoxels) {
+			const centerX =
+				-GRID_HALF_EXTENT_X +
+				voxel.x * VOXEL_SIZE +
+				VOXEL_SIZE * 0.5;
+
+			const centerY =
+				-GRID_HALF_EXTENT_Y +
+				voxel.y * VOXEL_SIZE +
+				VOXEL_SIZE * 0.5;
+
+			const centerZ =
+				-GRID_HALF_EXTENT_Z +
+				voxel.z * VOXEL_SIZE +
+				VOXEL_SIZE * 0.5;
+
+			for (const edge of voxelEdges) {
+				for (const vertex of edge) {
+					surfaceVoxelPositions[positionIndex++] =
+						vertex.x + centerX;
+
+					surfaceVoxelPositions[positionIndex++] =
+						vertex.y + centerY;
+
+					surfaceVoxelPositions[positionIndex++] =
+						vertex.z + centerZ;
+				}
+			}
+		}
+
+		surfaceVoxelPositionAttribute.needsUpdate = true;
+
+		surfaceVoxelGeo.setDrawRange(
+			0,
+			positionIndex / 3
+		);
 	}
 
 	//========================================================
@@ -119,7 +300,7 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 		100
 	);
 
-	camera.position.set(4.0, 3.0, 4.5);
+	camera.position.set(-1.0, 1.5, -5.5);
 
 	//========================================================
 	// Rendering
@@ -191,19 +372,19 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	for (let y = 0; y <= GRID_SIZE_Y; y++) {
 		for (let z = 0; z <= GRID_SIZE_Z; z++) {
 			const worldY =
-				-HALF_GRID_Y + y * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_Y + y * VOXEL_SIZE;
 
 			const worldZ =
-				-HALF_GRID_Z + z * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_Z + z * VOXEL_SIZE;
 
 			gridPoints.push(
 				new THREE.Vector3(
-					-HALF_GRID_X,
+					-GRID_HALF_EXTENT_X,
 					worldY,
 					worldZ
 				),
 				new THREE.Vector3(
-					HALF_GRID_X,
+					GRID_HALF_EXTENT_X,
 					worldY,
 					worldZ
 				)
@@ -217,20 +398,20 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	for (let x = 0; x <= GRID_SIZE_X; x++) {
 		for (let z = 0; z <= GRID_SIZE_Z; z++) {
 			const worldX =
-				-HALF_GRID_X + x * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_X + x * VOXEL_SIZE;
 
 			const worldZ =
-				-HALF_GRID_Z + z * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_Z + z * VOXEL_SIZE;
 
 			gridPoints.push(
 				new THREE.Vector3(
 					worldX,
-					-HALF_GRID_Y,
+					-GRID_HALF_EXTENT_Y,
 					worldZ
 				),
 				new THREE.Vector3(
 					worldX,
-					HALF_GRID_Y,
+					GRID_HALF_EXTENT_Y,
 					worldZ
 				)
 			);
@@ -243,21 +424,21 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	for (let x = 0; x <= GRID_SIZE_X; x++) {
 		for (let y = 0; y <= GRID_SIZE_Y; y++) {
 			const worldX =
-				-HALF_GRID_X + x * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_X + x * VOXEL_SIZE;
 
 			const worldY =
-				-HALF_GRID_Y + y * VOXEL_SIZE;
+				-GRID_HALF_EXTENT_Y + y * VOXEL_SIZE;
 
 			gridPoints.push(
 				new THREE.Vector3(
 					worldX,
 					worldY,
-					-HALF_GRID_Z
+					-GRID_HALF_EXTENT_Z
 				),
 				new THREE.Vector3(
 					worldX,
 					worldY,
-					HALF_GRID_Z
+					GRID_HALF_EXTENT_Z
 				)
 			);
 		}
@@ -266,8 +447,6 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	//========================================================
 	// Terrain Geometry
 	//========================================================
-
-	let terrainOffset = 0.0;
 
 	const sampleCountX =
 		Math.round(
@@ -295,11 +474,11 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	for (let z = 0; z < sampleCountZ; z++) {
 		for (let x = 0; x < sampleCountX; x++) {
 			const worldX =
-				-HALF_GRID_X +
+				-GRID_HALF_EXTENT_X +
 				x * TERRAIN_SAMPLE_SPACING;
 
 			const worldZ =
-				-HALF_GRID_Z +
+				-GRID_HALF_EXTENT_Z +
 				z * TERRAIN_SAMPLE_SPACING;
 
 			const worldY =
@@ -366,15 +545,48 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 			terrainIndices[indexPosition++] = v11;
 		}
 	}
+
+	//========================================================
+	// Surface Voxel Geometry
+	//========================================================
+
+	const maxSurfaceVoxelCount =
+		GRID_SIZE_X *
+		GRID_SIZE_Y *
+		GRID_SIZE_Z;
+
+	const voxelEdgeCount =
+		voxelEdges.length;
+
+	const verticesPerEdge = 2;
+	const componentsPerVertex = 3;
+
+	const floatsPerSurfaceVoxel =
+		voxelEdgeCount *
+		verticesPerEdge *
+		componentsPerVertex;
+
+	const surfaceVoxelPositions =
+		new Float32Array(
+			maxSurfaceVoxelCount *
+			floatsPerSurfaceVoxel
+		);
+
 	//========================================================
 	// Rendering Geometry
 	//========================================================
 
+	//--------------------------------------------------------
+	// Voxel Grid
+	//--------------------------------------------------------
 	const voxelGridGeo =
 		new THREE.BufferGeometry().setFromPoints(
 			gridPoints
 		);
 
+	//--------------------------------------------------------
+	// Terrain
+	//--------------------------------------------------------
 	const terrainGeo =
 		new THREE.BufferGeometry();
 
@@ -402,6 +614,29 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 
 	terrainGeo.computeVertexNormals();
 
+	//--------------------------------------------------------
+	// Surface Voxels
+	//--------------------------------------------------------
+	const surfaceVoxelGeo =
+		new THREE.BufferGeometry();
+
+	const surfaceVoxelPositionAttribute =
+		new THREE.BufferAttribute(
+			surfaceVoxelPositions,
+			3
+		);
+
+	surfaceVoxelPositionAttribute.setUsage(
+		THREE.DynamicDrawUsage
+	);
+
+	surfaceVoxelGeo.setAttribute(
+		"position",
+		surfaceVoxelPositionAttribute
+	);
+
+	surfaceVoxelGeo.setDrawRange(0, 0);
+
 	//========================================================
 	// Materials
 	//========================================================
@@ -409,16 +644,21 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	const voxelGridMaterial = new THREE.LineBasicMaterial({
 		color: 0xffffff,
 		transparent: true,
-		opacity: 0.35
+		opacity: 0.15
 	});
 
-	// MeshNormalMaterial
 	const terrainMaterial =
 		new THREE.MeshNormalMaterial({
-			color: 0x7092be,
 			side: THREE.DoubleSide,
 			transparent: true,
-			opacity: 0.5
+			opacity: 0.8
+		});
+
+	const surfaceVoxelMaterial =
+		new THREE.LineBasicMaterial({
+			color: 0xffffff,
+			transparent: true,
+			opacity: 0.3
 		});
 
 	//========================================================
@@ -428,8 +668,10 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	const voxelGrid =
 		new THREE.LineSegments(
 			voxelGridGeo,
-			voxelGridMaterial
+			voxelGridMaterial,
 		);
+
+	voxelGrid.visible = false;
 
 	const terrainMesh =
 		new THREE.Mesh(
@@ -437,21 +679,53 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 			terrainMaterial
 		);
 
+
+	const surfaceVoxelHighlights =
+		new THREE.LineSegments(
+			surfaceVoxelGeo,
+			surfaceVoxelMaterial
+		);
+
 	//========================================================
-	// Visualization State & Initialization
+	// Visualization Initialization
 	//========================================================
 
+	updateSurfaceVoxels();
+	updateSurfaceVoxelGeometry();
 
+	numSurfaceVoxels.textContent =
+		`Surface Voxels: ${surfaceVoxels.length}`;
 
 	//========================================================
 	// UI Event Handlers
 	//========================================================
+
+	surfaceSlider.addEventListener(
+		"input",
+		() => {
+			terrainOffset =
+				Number(surfaceSlider.value);
+
+			surfaceVariationValue.textContent =
+				terrainOffset.toFixed(1);
+
+			terrainDirty = true;
+		}
+	);
 
 	surfaceButton.addEventListener(
 		"click",
 		() => {
 			terrainMesh.visible =
 				!terrainMesh.visible;
+		}
+	);
+
+	surfaceVoxelsButton.addEventListener(
+		"click",
+		() => {
+			surfaceVoxelHighlights.visible =
+				!surfaceVoxelHighlights.visible;
 		}
 	);
 
@@ -476,6 +750,7 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 
 	scene.add(voxelGrid);
 	scene.add(terrainMesh);
+	scene.add(surfaceVoxelHighlights);
 
 	//========================================================
 	// Animation Loop
@@ -484,6 +759,11 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	renderer.setAnimationLoop(animate);
 
 	function animate() {
+		if (terrainDirty) {
+			updateTerrainSurface();
+			terrainDirty = false;
+		}
+
 		controls.update();
 		renderer.render(scene, camera);
 	}

@@ -526,7 +526,7 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 		100
 	);
 
-	camera.position.set(0, 0, 2);
+	camera.position.set(-1.25, 0.75, -1.75);
 
 	//========================================================
 	// Rendering
@@ -549,6 +549,7 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 		renderer.domElement
 	);
 
+	controls.target.set(0, 0, 0);
 	controls.update();
 	controls.saveState();
 
