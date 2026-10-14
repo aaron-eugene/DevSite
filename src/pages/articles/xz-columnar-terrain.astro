@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro";
 import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBasic.astro";
+import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstruction.astro";
 ---
 
 <BaseLayout title="XZ Columnar Terrain | Aaron’s Dev Experiments">
@@ -287,6 +288,12 @@ import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBa
 				could use all of that local information before I reduced it back
 				down to a plane. That led me to a bicubic Hermite patch.
 			</p>
+
+			<figure class="article-figure article-figure--visualization">
+				<ColumnSurfaceConstruction />
+
+				<figcaption>Description...</figcaption>
+			</figure>
 		</section>
 	</article>
 
