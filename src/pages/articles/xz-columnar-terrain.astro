@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro";
+import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBasic.astro";
 ---
 
 <BaseLayout title="XZ Columnar Terrain | Aaron’s Dev Experiments">
@@ -63,45 +64,39 @@ import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro"
 			</p>
 
 			<p>
-				That led to a harder question:
-				<i
-					>how do you take a truly three-dimensional world, have it
-					feel tiled and discrete, without making everything look like
-					a cube?</i
-				>
+				That led to an interesting question:{" "}
+				<i>
+					how do you create a three-dimensional world that feels tiled
+					and discrete without making everything look like a cube?
+				</i>
 			</p>
 
 			<p>
-				My preliminary answer was to separate the idea of the world unit
-				from the visible surface unit. I was comfortable keeping voxels
-				underneath as the editable spatial structure, but I did not want
-				the player to see a world made from exposed voxel faces.
-				Instead, I wanted the terrain surface itself to resolve into
-				deliberate, tile-like pieces.
+				My preliminary answer was to keep voxels as the editable spatial
+				structure, and sculpt the surface. I was comfortable keeping
+				voxels underneath, but I did not want the player to see a world
+				made from exposed voxel faces. Instead, I wanted the terrain
+				itself to resolve into deliberate, tile-like pieces.
 			</p>
 
 			<p>
-				Or, to put it another way, I wanted to start with continuous 3D
-				terrain and impose a readable tiled structure onto it. Each
-				visible piece would still feel like an individual unit of
-				terrain, while the landscape as a whole would be allowed to
-				resemble a natural environment.
+				To achieve that, I chose to start with continuous 3D terrain—a
+				heightmap at first, though I eventually wanted to generalize the
+				approach to density fields so it could support things like caves
+				and overhangs. On top of that terrain, I would impose a readable
+				tiled structure. Each visible piece would still feel like an
+				individual unit of terrain, while the landscape as a whole would
+				be allowed to resemble a natural environment.
 			</p>
 
 			<p>
 				That is where the experiment quickly became a geometry problem.
-				If a continuous surface passes through a voxel grid, what should
-				count as one tile—how do you construct one? The obvious choice
-				is to use the individual voxels that contain the surface.
-				However, the portion of the surface inside any given voxel can
-				vary wildly. Some contain a broad patch of terrain that cuts
-				cleanly across the voxel, while others contain only a tiny
-				fragment that clips a corner or edge. I tried embracing both
-				cases and worked through that for a while, but I found it
-				difficult to even maintain a coherent surface, much less produce
-				uniform-looking tiles. In the end, I decided that before I could
-				construct tiled terrain, I needed to redefine the spatial unit
-				used to create each visible surface piece.
+				The setup is basically a continuous terrain surface flowing
+				through a voxel grid (as can be seen in the figure below). In
+				this situation, what should count as one tile—how do you
+				construct one? The obvious choice is to use the individual
+				voxels that contain the surface as a basis. As I discovered,
+				though, that choice introduces several issues.
 			</p>
 
 			<figure class="article-figure article-figure--visualization">
@@ -111,28 +106,201 @@ import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro"
 					The highlighted voxels are those intersected by the
 					continuous terrain surface. Some contain broad surface
 					patches, while others contain only small fragments where the
-					surface clips a corner or edge. Use the controls to vary the
-					surface within the voxel grid.
+					surface clips a corner or edge.
 				</figcaption>
 			</figure>
 
+			<h2>The Tile Problem</h2>
+
+			<p>
+				There are several competing constraints in an approach like this
+				(though some were admittedly self-imposed for what I was trying
+				to achieve):
+			</p>
+
+			<ul>
+				<li>
+					As stated previously, you need some geometric basis for
+					constructing each tile from the continuous terrain surface.
+				</li>
+
+				<li>
+					Whatever you do with the visible surface, it still has to
+					map back to voxels in the end. That voxel ownership is what
+					makes the terrain editable by the player.
+				</li>
+
+				<li>
+					The resulting tiles still have to fit together into a
+					reasonably coherent terrain surface.
+				</li>
+
+				<li>
+					Because terrain would need to be loaded, unloaded, and
+					rebuilt in real time, tile construction should be explicitly
+					local. Each tile should be constructible using only its own
+					voxel and the portion of the continuous surface passing
+					through it, without polling neighboring geometry.
+				</li>
+			</ul>
+
+			<p>
+				My first real approach was to approximate the terrain inside
+				each surface voxel with a simple tangent plane. I found the
+				points where the continuous surface intersected the voxel
+				boundary and used their centroid as a representative point for
+				the local surface. Combined with the local surface normal, that
+				was enough to define a plane that locally approximated the
+				terrain inside the voxel.
+			</p>
+
+			<p>
+				But defining the plane was only part of the problem. The visible
+				tile itself could not extend infinitely—it had to be constrained
+				by the voxel boundary. So the actual tile came from intersecting
+				that local plane with the voxel cube.
+			</p>
+
+			<figure class="article-figure article-figure--visualization">
+				<PlaneCubeIntersectionBasic />
+
+				<figcaption>
+					A plane intersecting a cube can produce many different
+					bounded polygons depending on its orientation and offset.
+				</figcaption>
+			</figure>
+
+			<p>
+				As you can see in the visualization above, this is where the
+				approach started to break down. My goal was to create
+				rectangular tiles, but a plane/cube intersection does not
+				reliably give you that. Depending on how the plane passes
+				through the voxel, the resulting tile might be a triangle,
+				quadrilateral, pentagon, or hexagon. In some cases, it can also
+				shrink down into a tiny fragment near an edge or corner.
+			</p>
+
+			<p>
+				So even though the geometry was valid, it did not give me the
+				kind of consistent tile structure I was looking for. If each
+				voxel was allowed to define its own tile this way, the terrain
+				surface would be made from pieces with wildly different shapes
+				and sizes.
+			</p>
+
+			<p>
+				The problem was not purely aesthetic either. Those irregular
+				pieces also prevented this construction from producing a sealed
+				terrain surface. Once the intersection polygons started
+				collapsing into triangles, pentagons, hexagons, or small corner
+				fragments, the neighboring pieces did not meet in a way that
+				completely covered the terrain.
+			</p>
+
+			<p>
+				That led me to start thinking about the problem in terms of
+				{" "}<em>surface coverage</em>. I knew that planar
+				approximations were never going to reproduce the continuous
+				surface perfectly, but I didn't necessarily need them to. What I
+				needed was a construction that stayed close enough to the
+				original surface while reliably covering the terrain's XZ
+				footprint. Small discrepancies between neighboring pieces could
+				potentially be sealed afterward.
+			</p>
+
+			<p>
+				This was an important shift in the way I approached the problem.
+				Instead of treating the terrain as a completely general 3D
+				surface, I was now deliberately giving the vertical axis a
+				special role and prioritizing horizontal coverage.
+			</p>
+
+			<p>
+				That shift in thinking is what led me away from individual
+				surface voxels and toward XZ columns.
+			</p>
+
 			<h2>From Voxels to Columns</h2>
 
-			<p>The rest...</p>
-		</section>
+			<p>
+				The key change was to stop asking an individual surface voxel to
+				define the footprint of a tile. Instead, I began treating each
+				XZ voxel position as a vertical column through the terrain.
+			</p>
 
-		<section class="article-project">
-			<h2>Related Project</h2>
+			<p>
+				Because the terrain was a continuous heightmap, every XZ
+				position had a corresponding surface height. That meant each
+				voxel column was guaranteed to contain the terrain surface
+				somewhere across its entire rectangular footprint.
+			</p>
 
-			<a class="project-card" href="/projects/plane-voxel-lab">
-				<h3>Plane Voxel Lab</h3>
+			<p>
+				That gave me something the previous approach could not: a
+				predictable tile domain. Rather than allowing the intersection
+				between the surface and an individual voxel to determine the
+				tile boundaries, I could define those boundaries first and then
+				construct an approximation of the terrain inside them.
+			</p>
 
-				<p>
-					An experimental C++ / OpenGL lab for exploring voxel terrain
-					representation, surface construction, rendering, and
-					editable world systems.
-				</p>
-			</a>
+			<p>
+				The columnar domain also gave me more surface information to
+				work with. Instead of constructing a tile from whatever fragment
+				happened to fall inside one individual voxel, I could now work
+				with the continuous surface across the entire XZ footprint.
+			</p>
+
+			<p>
+				That meant I no longer needed to rely on the simple
+				tangent-plane approach either. With surface information
+				available across the entire footprint, I could use more of that
+				information to construct a better approximation of the terrain.
+			</p>
+
+			<p>
+				The next problem, then, was deciding how to turn that continuous
+				surface information into a single tile.
+			</p>
+
+			<h2>Constructing the Surface</h2>
+
+			<p>
+				With the tile footprint fixed, I could now use the continuous
+				heightmap across the entire XZ domain to decide what the tile
+				should look like. The simplest option was still a tangent plane,
+				but choosing that plane from a single sample point threw away
+				most of the surface information I now had available.
+			</p>
+
+			<p>
+				I also experimented with using the terrain heights at the four
+				corners of the footprint directly. That gave me a much better
+				picture of how the surface behaved across the tile, but
+				introduced another problem: four points sampled from a curved
+				surface are not generally coplanar. If I forced them into a
+				single plane, some of that information had to be discarded
+				again.
+			</p>
+
+			<p>
+				What I really needed was a temporary surface representation that
+				could use all of that local information before I reduced it back
+				down to a plane. That led me to a bicubic Hermite patch.
+			</p>
 		</section>
 	</article>
+
+	<section class="article-project">
+		<h2>Related Project</h2>
+
+		<a class="project-card" href="/projects/plane-voxel-lab">
+			<h3>Plane Voxel Lab</h3>
+
+			<p>
+				An experimental C++ / OpenGL lab for exploring voxel terrain
+				representation, surface construction, rendering, and editable
+				world systems.
+			</p>
+		</a>
+	</section>
 </BaseLayout>
