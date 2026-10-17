@@ -80,11 +80,33 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				itself to resolve into deliberate, tile-like pieces.
 			</p>
 
+			<h2>The Setup</h2>
+
 			<p>
-				To achieve that, I chose to start with continuous 3D terrain—a
-				heightmap at first, though I eventually wanted to generalize the
-				approach to density fields so it could support things like caves
-				and overhangs. On top of that terrain, I would impose a readable
+				To achieve that goal, I chose to start with a continuous terrain
+				surface in 3D—a heightmap at first, though I eventually wanted
+				to generalize the approach to density fields so it could support
+				things like caves and overhangs.
+			</p>
+
+			<p>
+				In the experiment, the noise started at a scale of one sample
+				per 20 world units and used five octaves. Each successive octave
+				doubled the frequency while contributing half as much amplitude
+				as the previous one. The combined result was normalized and
+				scaled to produce the final terrain height.
+			</p>
+
+			<p>
+				The important property for the rest of the experiment was that
+				this produced a continuous height function. For any XZ position,
+				I could evaluate a corresponding terrain height. I could also
+				sample nearby positions to estimate the local slope of the
+				surface.
+			</p>
+
+			<p>
+				On top of that continuous surface, I would impose a readable
 				tiled structure. Each visible piece would still feel like an
 				individual unit of terrain, while the landscape as a whole would
 				be allowed to resemble a natural environment.
@@ -92,12 +114,10 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 
 			<p>
 				That is where the experiment quickly became a geometry problem.
-				The setup is basically a continuous terrain surface flowing
-				through a voxel grid (as can be seen in the figure below). In
-				this situation, what should count as one tile—how do you
-				construct one? The obvious choice is to use the individual
-				voxels that contain the surface as a basis. As I discovered,
-				though, that choice introduces several issues.
+				Taken together, the setup was a continuous terrain surface
+				flowing through a discrete voxel lattice, as shown in the
+				visualization below. The visible surface therefore had to
+				reconcile those two representations.
 			</p>
 
 			<figure class="article-figure article-figure--visualization">
@@ -111,6 +131,13 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				</figcaption>
 			</figure>
 
+			<p>
+				However, in this situation, what should count as one tile—how do
+				you construct one? The obvious choice is to use the individual
+				voxels that contain the surface as a basis. As I discovered,
+				though, that choice introduces several issues.
+			</p>
+
 			<h2>The Tile Problem</h2>
 
 			<p>
@@ -122,7 +149,8 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			<ul>
 				<li>
 					As stated previously, you need some geometric basis for
-					constructing each tile from the continuous terrain surface.
+					constructing each tile—how do you use the voxel lattice and
+					the surface to create them?
 				</li>
 
 				<li>
@@ -177,7 +205,7 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				rectangular tiles, but a plane/cube intersection does not
 				reliably give you that. Depending on how the plane passes
 				through the voxel, the resulting tile might be a triangle,
-				quadrilateral, pentagon, or hexagon. In some cases, it can also
+				quadrilateral, pentagon, or hexagon. Worse still, it can also
 				shrink down into a tiny fragment near an edge or corner.
 			</p>
 
@@ -191,11 +219,9 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 
 			<p>
 				The problem was not purely aesthetic either. Those irregular
-				pieces also prevented this construction from producing a sealed
-				terrain surface. Once the intersection polygons started
-				collapsing into triangles, pentagons, hexagons, or small corner
-				fragments, the neighboring pieces did not meet in a way that
-				completely covered the terrain.
+				pieces also prevented this method of construction from producing
+				a sealed terrain surface. Neighboring pieces did not meet in a
+				way that completely covered the terrain, resulting in holes.
 			</p>
 
 			<p>
@@ -230,25 +256,18 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			</p>
 
 			<p>
-				Because the terrain was a continuous heightmap, every XZ
-				position had a corresponding surface height. That meant each
-				voxel column was guaranteed to contain the terrain surface
-				somewhere across its entire rectangular footprint.
-			</p>
-
-			<p>
-				That gave me something the previous approach could not: a
-				predictable tile domain. Rather than allowing the intersection
-				between the surface and an individual voxel to determine the
-				tile boundaries, I could define those boundaries first and then
-				construct an approximation of the terrain inside them.
+				That gave me something the previous approach could not: a fixed,
+				rectangular tile domain. Rather than letting the surface
+				fragment inside a voxel determine the tile boundary, I could
+				define the footprint first and then construct an approximation
+				of the terrain across it.
 			</p>
 
 			<p>
 				The columnar domain also gave me more surface information to
 				work with. Instead of constructing a tile from whatever fragment
-				happened to fall inside one individual voxel, I could now work
-				with the continuous surface across the entire XZ footprint.
+				happened to fall inside one voxel, I could now consider the
+				continuous surface across the entire XZ footprint.
 			</p>
 
 			<p>
@@ -259,41 +278,126 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			</p>
 
 			<p>
-				The next problem, then, was deciding how to turn that continuous
-				surface information into a single tile.
+				That opened the door to a better way of choosing the tile's
+				representative plane. The next problem was deciding how to
+				reduce that richer surface information back down to a single
+				planar tile.
 			</p>
 
 			<h2>Constructing the Surface</h2>
 
 			<p>
-				With the tile footprint fixed, I could now use the continuous
-				heightmap across the entire XZ domain to decide what the tile
-				should look like. The simplest option was still a tangent plane,
-				but choosing that plane from a single sample point threw away
-				most of the surface information I now had available.
+				With the tile footprint fixed, I also changed how I chose the
+				representative plane. Rather than deriving its tangent point
+				from the intersection between the terrain and an individual
+				voxel, I could evaluate the heightmap directly at the center of
+				the XZ footprint and construct a tangent plane from the height
+				and local slope there.
 			</p>
 
 			<p>
-				I also experimented with using the terrain heights at the four
-				corners of the footprint directly. That gave me a much better
+				That gave me a simple and consistent way to construct each tile,
+				but it still had an obvious limitation: the entire plane was
+				being decided by what the terrain happened to be doing at a
+				single point. Everything else happening across the footprint was
+				effectively ignored.
+			</p>
+
+			<p>
+				I also briefly experimented with using the terrain heights at
+				the four corners of the footprint directly. That gave a better
 				picture of how the surface behaved across the tile, but
 				introduced another problem: four points sampled from a curved
-				surface are not generally coplanar. If I forced them into a
-				single plane, some of that information had to be discarded
-				again.
+				surface are not generally coplanar. I could fit a plane to them,
+				but once again I would be throwing away some of the information
+				I had just gained.
 			</p>
 
 			<p>
-				What I really needed was a temporary surface representation that
-				could use all of that local information before I reduced it back
-				down to a plane. That led me to a bicubic Hermite patch.
+				What I really needed was some kind of intermediate
+				representation that could use all of that local information
+				before I reduced it back down to a plane. I also had the sense
+				that the way the surface was sloped across the footprint needed
+				to factor into the result—not just height information. My
+				initial line of reasoning was to somehow combine or average the
+				gradients around the edges of the XZ footprint.
+			</p>
+
+			<p>
+				That line of thinking eventually led me to a bicubic Hermite
+				patch, which is something I had admittedly never seen before
+				this experiment. It gave me a way to combine both height and
+				slope information across the footprint before evaluating the
+				patch at its center to define a single representative plane.
+			</p>
+
+			<p>
+				For each corner of the footprint, I sampled the terrain height
+				and estimated its slope in X and Z. Those values were used to
+				build the Hermite patch across the cell. I then evaluated the
+				patch at its center and used the resulting height and gradient
+				to define the final tangent plane.
 			</p>
 
 			<figure class="article-figure article-figure--visualization">
 				<ColumnSurfaceConstruction />
 
-				<figcaption>Description...</figcaption>
+				<figcaption>
+					The direct tangent uses the height and slope of the original
+					heightmap at the center of the cell. The Hermite tangent
+					uses the height and slope evaluated from a bicubic patch
+					built from information across the entire footprint.
+				</figcaption>
 			</figure>
+
+			<p>
+				The patch itself was never meant to become the visible terrain.
+				It was simply a way to gather more of the local surface behavior
+				before reducing everything back down to a planar tile.
+			</p>
+
+			<p>
+				In practice, that also helped the resulting planes follow the
+				underlying continuous surface more closely. Because the Hermite
+				patch incorporated information from across the footprint, its
+				center height and slope tended to produce a plane that better
+				reflected the broader shape of the terrain than one based only
+				on a direct sample at the center. And, depending on the terrain,
+				the two planes could differ noticeably.
+			</p>
+
+			<h2>Voxel Ownership and Sealing</h2>
+
+			<p>
+				At this point I had a consistent way to construct one planar
+				surface across an XZ footprint, but there was a new problem to
+				solve: the plane did not necessarily belong to a single voxel in
+				Y.
+			</p>
+
+			<p>
+				If the underlying surface was steep enough, it could extend up
+				through the voxel column over many voxels. And because the
+				terrain was still meant to be editable at the voxel level, I
+				needed to preserve that ownership rather than treating the
+				entire plane as one indivisible piece.
+			</p>
+
+			<p>
+				Chunk boundaries added another layer to that problem. A single
+				planar tile could cross not only several voxels in Y, but also a
+				Y-chunk boundary. That meant the surface could not simply belong
+				to the XZ column as a whole; its pieces had to be assigned to
+				the voxel and chunk that actually contained them.
+			</p>
+
+			<p>
+				The solution was to slice the plane wherever it crossed a
+				horizontal voxel boundary. Each resulting surface fragment could
+				then be assigned to the voxel whose vertical range contained it.
+				This rule also naturally worked for chunk boundaries. Overall,
+				the ownership model would stay local and predictable.
+			</p>
 		</section>
 	</article>
 
