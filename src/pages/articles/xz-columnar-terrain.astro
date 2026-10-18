@@ -242,11 +242,6 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				special role and prioritizing horizontal coverage.
 			</p>
 
-			<p>
-				That shift in thinking is what led me away from individual
-				surface voxels and toward XZ columns.
-			</p>
-
 			<h2>From Voxels to Columns</h2>
 
 			<p>
@@ -257,30 +252,16 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 
 			<p>
 				That gave me something the previous approach could not: a fixed,
-				rectangular tile domain. Rather than letting the surface
-				fragment inside a voxel determine the tile boundary, I could
-				define the footprint first and then construct an approximation
-				of the terrain across it.
+				rectangular tile domain. Rather than letting whatever fragment
+				of the surface happened to fall inside a voxel determine the
+				tile boundary, I could define the footprint first and then
+				consider the continuous terrain across that entire region.
 			</p>
 
 			<p>
-				The columnar domain also gave me more surface information to
-				work with. Instead of constructing a tile from whatever fragment
-				happened to fall inside one voxel, I could now consider the
-				continuous surface across the entire XZ footprint.
-			</p>
-
-			<p>
-				That meant I no longer needed to rely on the simple
-				tangent-plane approach either. With surface information
-				available across the entire footprint, I could use more of that
-				information to construct a better approximation of the terrain.
-			</p>
-
-			<p>
-				That opened the door to a better way of choosing the tile's
-				representative plane. The next problem was deciding how to
-				reduce that richer surface information back down to a single
+				That also gave me more surface information to work with when
+				choosing the tile's representative plane. The next question was
+				how to reduce that richer information back down to a single
 				planar tile.
 			</p>
 
@@ -370,9 +351,8 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 
 			<p>
 				At this point I had a consistent way to construct one planar
-				surface across an XZ footprint, but there was a new problem to
-				solve: the plane did not necessarily belong to a single voxel in
-				Y.
+				surface across an XZ footprint, but the plane did not
+				necessarily belong to a single voxel in Y.
 			</p>
 
 			<p>
@@ -384,19 +364,261 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			</p>
 
 			<p>
-				Chunk boundaries added another layer to that problem. A single
-				planar tile could cross not only several voxels in Y, but also a
-				Y-chunk boundary. That meant the surface could not simply belong
-				to the XZ column as a whole; its pieces had to be assigned to
-				the voxel and chunk that actually contained them.
+				Chunk boundaries made that ownership question more important. A
+				single planar tile could cross not only several voxels in Y, but
+				also a Y-chunk boundary. Its pieces therefore had to be assigned
+				to the voxel and chunk that actually contained them.
 			</p>
 
 			<p>
 				The solution was to slice the plane wherever it crossed a
 				horizontal voxel boundary. Each resulting surface fragment could
 				then be assigned to the voxel whose vertical range contained it.
-				This rule also naturally worked for chunk boundaries. Overall,
-				the ownership model would stay local and predictable.
+				The same rule naturally carried across chunk boundaries, keeping
+				the ownership model local and predictable.
+			</p>
+
+			<p>
+				With ownership handled, the remaining issue was continuity
+				between neighboring columns. The columnar construction gave me
+				reliable horizontal coverage across XZ, but adjacent tiles were
+				still built independently. Their shared edges would often end at
+				different heights, leaving vertical gaps between them.
+			</p>
+
+			<p>
+				This brought the surface-coverage problem back in a different
+				form. I handled those gaps by generating side fragments along
+				the boundaries between neighboring columns.
+			</p>
+
+			<p>
+				Those fragments acted like vertical skirts, connecting the edge
+				of one planar tile to the edge of the next. Together with the
+				sliced top pieces, they turned the independently constructed
+				column surfaces into a sealed terrain surface.
+			</p>
+
+			<figure class="article-figure article-figure--image">
+				<div class="article-image-stack">
+					<img
+						src="/images/xz-columnar-normals.jpg"
+						alt="XZ columnar terrain rendered with normal-based coloring, making the vertical sealing fragments easy to distinguish from the sloped top surfaces."
+					/>
+
+					<img
+						src="/images/xz-columnar-lit.jpg"
+						alt="The same XZ columnar terrain view rendered with lighting and terrain textures."
+					/>
+				</div>
+
+				<figcaption>
+					The same terrain shown with normal-based coloring and with
+					lit terrain textures. In the normal view, the vertically
+					oriented side fragments stand out clearly between the sloped
+					top pieces, making the sealing structure easier to see.
+				</figcaption>
+			</figure>
+
+			<p>
+				Sealing did weaken one of my original locality goals. A column
+				could no longer be processed in complete isolation, because
+				determining what needed to be filled along an edge required
+				comparing it against the neighboring column.
+			</p>
+
+			<p>
+				I still wanted to avoid making chunk construction depend
+				directly on neighboring chunks, so each chunk-column grid
+				included a one-cell halo around its owned XZ region. Those halo
+				cells were constructed from the same underlying heightmap and
+				provided the neighboring surface information needed for edge
+				comparisons, including along chunk boundaries.
+			</p>
+
+			<h2>Where It Broke Down</h2>
+
+			<p>
+				By this point, the experiment was doing most of what I had set
+				out to do. The terrain was built from discrete, voxel-owned
+				pieces, neighboring columns could be sealed together, and the
+				result still followed the underlying continuous surface
+				reasonably well.
+			</p>
+
+			<p>
+				But getting there had also changed the nature of the system.
+				What started as a more general voxel-surface idea had become
+				something much more specifically columnar, and that introduced
+				several tradeoffs.
+			</p>
+
+			<p>
+				The first was axis asymmetry. X and Z defined the tile
+				footprint, while Y became the direction in which each tile was
+				sliced, assigned, and sealed. That worked naturally for
+				heightmap terrain, but it also meant the three axes were no
+				longer being treated equally. The approach had become much less
+				suitable for arbitrary 3D surfaces.
+			</p>
+
+			<p>
+				The fixed XZ footprint also became increasingly awkward on steep
+				terrain. Every tile covered the same horizontal area regardless
+				of slope, so a tile spanning a steep section of terrain had to
+				stretch farther through world space than one on flatter ground.
+				The result could be long surface pieces that no longer read as
+				especially tile-like.
+			</p>
+
+			<figure class="article-figure article-figure--image">
+				<img
+					src="/images/xz-columnar-steep-slope-distortion.jpg"
+					alt="A steep mountainside in the XZ columnar terrain experiment, where the planar terrain tiles appear stretched into long pieces as they climb the slope."
+				/>
+
+				<figcaption>
+					On steep terrain, the fixed XZ footprint causes the planar
+					top pieces to stretch through world space. The tiles remain
+					consistent in horizontal coverage, but they become elongated
+					and less tile-like as the slope increases.
+				</figcaption>
+			</figure>
+
+			<p>
+				The most visible problem showed up where the underlying terrain
+				changed slope quickly. Because each tile was still a flat planar
+				approximation, neighboring tiles could end up with noticeably
+				different orientations. Instead of following the continuous
+				surface smoothly through those regions, the mesh developed sharp
+				ridges where one planar approximation gave way to the next.
+			</p>
+
+			<p>
+				That effect was often exaggerated because adjacent top pieces
+				did not necessarily meet cleanly at their shared boundary. One
+				tile could project farther than the other, creating a staggered
+				edge on top of the slope change itself. The surface was sealed,
+				but it could still look jagged in exactly the places where the
+				original terrain was changing shape most quickly.
+			</p>
+
+			<figure class="article-figure article-figure--image">
+				<img
+					src="/images/xz-columnar-jagged-slope-change.jpg"
+					alt="A close-up of the XZ columnar terrain experiment showing sharp, jagged transitions between neighboring planar tiles on a snowy mountainside."
+				/>
+
+				<figcaption>
+					Where the underlying terrain changes slope quickly,
+					neighboring planar tiles can diverge noticeably. Instead of
+					forming a smooth transition, the surface develops sharp
+					ridges and staggered edges between adjacent pieces.
+				</figcaption>
+			</figure>
+
+			<p>
+				That also made the mesh a poor candidate for traversal or
+				collision. In the same places where the visible surface became
+				jagged, the geometry could create abrupt ridges and awkward
+				transitions for a character to move across. A smoother collision
+				surface could be generated separately, but then the rendered
+				terrain and the surface the player actually moved over would no
+				longer agree very well. Characters would appear to clip through
+				or otherwise ignore parts of the visible geometry.
+			</p>
+
+			<p>
+				There was also a locality tradeoff. The top surface of a column
+				could still be constructed independently, but sealing the gaps
+				between columns required information from neighboring cells. The
+				one-cell halo kept that dependency contained and avoided
+				requiring already-built neighboring chunks, but the construction
+				was no longer completely local at the individual-column level.
+			</p>
+
+			<p>
+				Taken together, those tradeoffs gave me a much clearer sense of
+				where this approach worked well and where it started to strain.
+				More importantly, they gave me some ideas I can carry forward.
+			</p>
+
+			<h2>What I Took From It</h2>
+
+			<p>
+				In the end, this was more of an exploration. I started off with
+				a somewhat vague idea, followed it to one of its logical
+				conclusions, and ended up with what I have described above.
+			</p>
+
+			<p>
+				I don't think I will be using this exact terrain construction
+				for anything I currently want to build, but I can still imagine
+				cases where it could make sense. Something closer to a digital
+				board game, for example, could probably make better use of the
+				strongly tiled surface—especially if character movement was
+				designed around the geometry rather than expected to behave like
+				ordinary free movement across terrain.
+			</p>
+
+			<p>
+				One thing the experiment clarified for me was the idea of
+				ownership. I already knew that I wanted the visible surface to
+				be separate from the voxel structure underneath it, but working
+				through this system made the relationship more concrete. Surface
+				geometry still has to belong somewhere. If the underlying
+				spatial structure is what makes the world editable, then the
+				visible pieces need clear rules for which voxel or chunk owns
+				them.
+			</p>
+
+			<p>
+				The bigger idea I want to carry forward is the shift toward
+				defining the domain of a surface piece before constructing it.
+				My first approach let the intersection between the continuous
+				terrain and the voxel lattice decide what geometry was
+				available. The columnar approach reversed that: I defined the XZ
+				footprint first, then asked how the terrain should be
+				represented inside it.
+			</p>
+
+			<p>
+				Those are two very different ways of approaching the same
+				problem. One starts with whatever geometry naturally falls out
+				of the underlying representations and tries to make use of it.
+				The other starts by defining the region or shape you want to
+				cover and then asks how the underlying surface can be reduced
+				into that domain.
+			</p>
+
+			<p>
+				The Hermite construction was another useful result. I originally
+				arrived there because I wanted some way to make use of the
+				height and slope information spread across a tile rather than
+				relying on a single sample. It gave me a way to turn that richer
+				local information back into the simple planar geometry I was
+				looking for, and it also introduced me to a kind of
+				interpolation I hadn't worked with before. That feels like a
+				technique with uses beyond this terrain experiment.
+			</p>
+
+			<p>
+				The biggest unresolved question is still the tile shape itself.
+				Forcing square tiles onto a genuinely three-dimensional surface
+				was always going to be awkward, and this experiment made some of
+				the limitations involved very obvious. I still think there may
+				be a better way to do this without producing the stretching and
+				jagged transitions I ended up with here. I just don't know what
+				that construction looks like yet.
+			</p>
+
+			<p>
+				So although I would approach the final surface construction
+				differently, several ideas from this experiment are worth
+				keeping and exploring further: explicit ownership of visible
+				terrain, defining surface domains up front, reasoning in terms
+				of coverage, and using richer local surface information before
+				reducing it into simpler geometry.
 			</p>
 		</section>
 	</article>

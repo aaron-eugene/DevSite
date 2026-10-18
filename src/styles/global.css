@@ -217,6 +217,12 @@ nav a:hover {
 	color: var(--color-accent-gold);
 }
 
+.article-image-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
 
 /* --------------------------------------------------
    Image Figures
