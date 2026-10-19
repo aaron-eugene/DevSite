@@ -307,17 +307,17 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			<p>
 				That line of thinking eventually led me to a bicubic Hermite
 				patch, which is something I had admittedly never seen before
-				this experiment. It gave me a way to combine both height and
-				slope information across the footprint before evaluating the
-				patch at its center to define a single representative plane.
+				this experiment. It gave me a way to preserve both height and
+				slope information across the footprint instead of reducing that
+				information too early.
 			</p>
 
 			<p>
 				For each corner of the footprint, I sampled the terrain height
-				and estimated its slope in X and Z. Those values were used to
-				build the Hermite patch across the cell. I then evaluated the
-				patch at its center and used the resulting height and gradient
-				to define the final tangent plane.
+				and estimated its slope in X and Z. Those values defined the
+				Hermite patch across the cell. I then evaluated the patch at its
+				center and used the resulting height and gradient to define the
+				final tangent plane.
 			</p>
 
 			<figure class="article-figure article-figure--visualization">
@@ -356,11 +356,11 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			</p>
 
 			<p>
-				If the underlying surface was steep enough, it could extend up
-				through the voxel column over many voxels. And because the
-				terrain was still meant to be editable at the voxel level, I
-				needed to preserve that ownership rather than treating the
-				entire plane as one indivisible piece.
+				If the underlying surface was steep enough, the planar tile
+				could extend up through the voxel column over many voxels. And
+				because the terrain was still meant to be editable at the voxel
+				level, I needed to preserve that ownership rather than treating
+				the entire plane as one indivisible piece.
 			</p>
 
 			<p>
@@ -459,7 +459,9 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				sliced, assigned, and sealed. That worked naturally for
 				heightmap terrain, but it also meant the three axes were no
 				longer being treated equally. The approach had become much less
-				suitable for arbitrary 3D surfaces.
+				suitable for arbitrary 3D surfaces. That also worked against my
+				original hope of eventually extending the approach from
+				heightmaps to more general density-field terrain.
 			</p>
 
 			<p>
@@ -529,12 +531,10 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 			</p>
 
 			<p>
-				There was also a locality tradeoff. The top surface of a column
-				could still be constructed independently, but sealing the gaps
-				between columns required information from neighboring cells. The
-				one-cell halo kept that dependency contained and avoided
-				requiring already-built neighboring chunks, but the construction
-				was no longer completely local at the individual-column level.
+				There was also a locality tradeoff. Sealing required neighboring
+				surface information, so the construction was no longer
+				completely local at the individual-column level, even though the
+				halo kept chunk construction independent.
 			</p>
 
 			<p>
@@ -579,16 +579,10 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 				terrain and the voxel lattice decide what geometry was
 				available. The columnar approach reversed that: I defined the XZ
 				footprint first, then asked how the terrain should be
-				represented inside it.
-			</p>
-
-			<p>
-				Those are two very different ways of approaching the same
-				problem. One starts with whatever geometry naturally falls out
-				of the underlying representations and tries to make use of it.
-				The other starts by defining the region or shape you want to
-				cover and then asks how the underlying surface can be reduced
-				into that domain.
+				represented inside it. That feels like a much more general
+				design idea—either work with whatever geometry naturally falls
+				out of the underlying representations, or define the region you
+				want to cover first and fit the surface into it.
 			</p>
 
 			<p>
@@ -604,10 +598,10 @@ import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstructio
 
 			<p>
 				The biggest unresolved question is still the tile shape itself.
-				Forcing square tiles onto a genuinely three-dimensional surface
-				was always going to be awkward, and this experiment made some of
-				the limitations involved very obvious. I still think there may
-				be a better way to do this without producing the stretching and
+				Forcing square tiles onto a continuous terrain surface in 3D was
+				always going to be awkward, and this experiment made some of the
+				limitations involved very obvious. I still think there may be a
+				better way to do this without producing the stretching and
 				jagged transitions I ended up with here. I just don't know what
 				that construction looks like yet.
 			</p>

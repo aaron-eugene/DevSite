@@ -14,8 +14,49 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 		<p class="intro">
 			This site is a living technical notebook for my hobby programming
 			work. It is where I document terrain research, graphics prototypes,
-			renderer work, debugging tools, and design tradeoffs.
+			renderer work, and design tradeoffs.
 		</p>
+	</section>
+
+	<section class="latest-work">
+		<h2>Latest Work</h2>
+
+		<div class="article-grid">
+			<a class="article-card" href="/articles/xz-columnar-terrain">
+				<p class="article-card__area">Terrain Systems</p>
+
+				<h3>XZ Columnar Terrain</h3>
+
+				<p>
+					An experiment in constructing a sealed, voxel-owned terrain
+					surface from heightmap-derived planar patches and vertical
+					side fragments.
+				</p>
+
+				<span class="article-card__link">Read article →</span>
+			</a>
+
+			<div class="article-card article-card--placeholder">
+				<p class="article-card__area">Future Article</p>
+
+				<h3>More experiments coming</h3>
+
+				<p>
+					Another technical rabbit hole will eventually end up here.
+				</p>
+			</div>
+
+			<div class="article-card article-card--placeholder">
+				<p class="article-card__area">Future Article</p>
+
+				<h3>Under Construction</h3>
+
+				<p>
+					Currently occupied by an idea that has not become an article
+					yet.
+				</p>
+			</div>
+		</div>
 	</section>
 
 	<section class="areas-preview">
@@ -24,6 +65,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 		<div class="area-grid">
 			<a class="area-card" href="/areas/terrain-systems">
 				<h3>Terrain Systems</h3>
+
 				<p>
 					Research into terrain representation, surface construction,
 					density fields, topology, and approaches to editable world
@@ -33,6 +75,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 			<a class="area-card" href="/areas/rendering">
 				<h3>Rendering</h3>
+
 				<p>
 					Experiments with OpenGL rendering, shaders, lighting,
 					texturing, camera systems, and visual presentation.
@@ -41,6 +84,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 			<a class="area-card" href="/areas/spatial-world-systems">
 				<h3>Spatial & World Systems</h3>
+
 				<p>
 					Work on coordinate systems, chunk organization, large-world
 					precision, procedural sampling, and spatial relationships.
@@ -49,6 +93,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 			<a class="area-card" href="/areas/tools-debugging">
 				<h3>Tools / Debugging</h3>
+
 				<p>
 					Debug views, diagnostic overlays, development controls,
 					profiling tools, and workflow improvements that support

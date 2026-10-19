@@ -274,17 +274,33 @@ nav a:hover {
    About Page
    ================================================== */
 
-.about-content {
-	max-width: var(--width-content);
-	line-height: 1.7;
+.about-intro {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.5rem;
 }
 
-.about-content h2 {
-	margin-top: 3rem;
+.about-photo {
+	width: 190px;
+	aspect-ratio: 1 / 1;
+	flex: 0 0 auto;
+	object-fit: cover;
+	object-position: center 49%;
+	border-radius: var(--radius-medium);
 }
 
-.about-content p {
-	color: var(--color-text-secondary);
+.about-intro p:first-child {
+	margin-top: 0;
+}
+
+@media (max-width: 650px) {
+	.about-intro {
+		flex-direction: column;
+	}
+
+	.about-photo {
+		width: 180px;
+	}
 }
 
 
