@@ -1,8 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+import { getPublishedArticles } from "../lib/articles.js";
+
+const latestArticles = getPublishedArticles().slice(0, 3);
+
+const placeholderCount = Math.max(0, 3 - latestArticles.length);
 ---
 
-<BaseLayout title="Aaron’s Dev Experiments">
+<BaseLayout title="Aaron's Dev Experiments">
 	<section class="hero">
 		<p class="eyebrow">Graphics / Terrain Experiments / Game Development</p>
 
@@ -12,9 +18,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 		</h1>
 
 		<p class="intro">
-			This site is a living technical notebook for my hobby programming
-			work. It is where I document terrain research, graphics prototypes,
-			renderer work, and design tradeoffs.
+			A personal technical notebook for the projects and experiments I
+			spend my free time working through.
 		</p>
 	</section>
 
@@ -22,40 +27,39 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 		<h2>Latest Work</h2>
 
 		<div class="article-grid">
-			<a class="article-card" href="/articles/xz-columnar-terrain">
-				<p class="article-card__area">Terrain Systems</p>
+			{
+				latestArticles.map((article) => (
+					<a class="article-card" href={article.href}>
+						<p class="article-card__area">{article.area}</p>
 
-				<h3>XZ Columnar Terrain</h3>
+						<h3>{article.title}</h3>
 
-				<p>
-					An experiment in constructing a sealed, voxel-owned terrain
-					surface from heightmap-derived planar patches and vertical
-					side fragments.
-				</p>
+						<p>{article.description}</p>
 
-				<span class="article-card__link">Read article →</span>
-			</a>
+						<span class="article-card__link">Read article →</span>
+					</a>
+				))
+			}
 
-			<div class="article-card article-card--placeholder">
-				<p class="article-card__area">Future Article</p>
+			{
+				Array.from({ length: placeholderCount }).map((_, index) => (
+					<div class="article-card article-card--placeholder">
+						<p class="article-card__area">Future Article</p>
 
-				<h3>More experiments coming</h3>
+						<h3>
+							{index === 0
+								? "More experiments coming"
+								: "Under Construction"}
+						</h3>
 
-				<p>
-					Another technical rabbit hole will eventually end up here.
-				</p>
-			</div>
-
-			<div class="article-card article-card--placeholder">
-				<p class="article-card__area">Future Article</p>
-
-				<h3>Under Construction</h3>
-
-				<p>
-					Currently occupied by an idea that has not become an article
-					yet.
-				</p>
-			</div>
+						<p>
+							{index === 0
+								? "Another technical rabbit hole will eventually end up here."
+								: "Currently occupied by an idea that has not become an article yet."}
+						</p>
+					</div>
+				))
+			}
 		</div>
 	</section>
 

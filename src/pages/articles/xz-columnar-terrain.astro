@@ -1,23 +1,32 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
 import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro";
 import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBasic.astro";
 import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstruction.astro";
+
+export const article = {
+	title: "XZ Columnar Terrain",
+	description:
+		"An experiment in constructing a sealed, voxel-owned terrain surface from heightmap-derived planar patches and vertical side fragments.",
+	area: "Terrain Systems",
+	areaHref: "/areas/terrain-systems",
+	published: "2026-10-19",
+	draft: false,
+};
 ---
 
-<BaseLayout title="XZ Columnar Terrain | Aaron’s Dev Experiments">
+<BaseLayout title={`${article.title} | Aaron's Dev Experiments`}>
 	<article class="article-page">
 		<header class="article-header">
 			<p class="eyebrow">
-				<a href="/areas/terrain-systems">Terrain Systems</a>
+				<a href={article.areaHref}>{article.area}</a>
 			</p>
 
-			<h1>XZ Columnar Terrain</h1>
+			<h1>{article.title}</h1>
 
 			<p class="intro">
-				An experiment in constructing a sealed voxel-owned terrain
-				surface from heightmap-derived planar patches and vertical side
-				fragments.
+				{article.description}
 			</p>
 		</header>
 

@@ -1,3 +1,5 @@
+/* #region Theme */
+
 /* ==================================================
    Theme
    ================================================== */
@@ -40,6 +42,9 @@
 	--radius-large: 1rem;
 }
 
+/* #endregion */
+
+/* #region Base and Typography */
 
 /* ==================================================
    Base
@@ -51,7 +56,6 @@ body {
 	background: var(--color-bg);
 	color: var(--color-text);
 }
-
 
 /* ==================================================
    Typography
@@ -93,6 +97,9 @@ h2 {
 	line-height: 1.6;
 }
 
+/* #endregion */
+
+/* #region Site Layout */
 
 /* ==================================================
    Site Layout
@@ -134,6 +141,9 @@ nav a:hover {
 	color: var(--color-accent-gold);
 }
 
+/* #endregion */
+
+/* #region Front Page */
 
 /* ==================================================
    Front Page
@@ -144,12 +154,26 @@ nav a:hover {
 	margin-bottom: 2.5rem;
 }
 
+.latest-work {
+	margin-top: 4rem;
+}
+
+.article-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1.25rem;
+	margin-top: 1.5rem;
+}
+
 .area-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	gap: 1rem;
 }
 
+/* #endregion */
+
+/* #region Content Pages */
 
 /* ==================================================
    Technical Area Landing Pages
@@ -173,7 +197,6 @@ nav a:hover {
 	color: var(--color-text-muted);
 }
 
-
 /* ==================================================
    Article Pages
    ================================================== */
@@ -191,7 +214,6 @@ nav a:hover {
 .article-project {
 	margin-top: 4rem;
 }
-
 
 /* ==================================================
    Article Figures
@@ -223,7 +245,6 @@ nav a:hover {
 	gap: 0.75rem;
 }
 
-
 /* --------------------------------------------------
    Image Figures
    -------------------------------------------------- */
@@ -239,7 +260,6 @@ nav a:hover {
 	border-radius: var(--radius-medium);
 }
 
-
 /* --------------------------------------------------
    Visualization Figures
    -------------------------------------------------- */
@@ -247,7 +267,6 @@ nav a:hover {
 .article-figure--visualization {
 	max-width: var(--width-visualization);
 }
-
 
 /* ==================================================
    Project Pages
@@ -268,7 +287,6 @@ nav a:hover {
 .project-area-links a:hover {
 	color: var(--color-accent-gold);
 }
-
 
 /* ==================================================
    About Page
@@ -293,6 +311,129 @@ nav a:hover {
 	margin-top: 0;
 }
 
+/* #endregion */
+
+/* #region Cards */
+
+/* ==================================================
+   Cards
+   ================================================== */
+
+.area-card,
+.article-card,
+.project-card {
+	display: block;
+	padding: 1.25rem;
+
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-large);
+
+	background: var(--color-panel);
+	color: inherit;
+	text-decoration: none;
+
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		transform 0.15s ease;
+}
+
+.area-card:hover,
+.article-card:hover,
+.project-card:hover {
+	background: var(--color-panel-hover);
+	border-color: var(--color-border-strong);
+	transform: translateY(-2px);
+}
+
+.area-card h3,
+.article-card h3,
+.project-card h3 {
+	color: var(--color-accent-gold);
+}
+
+.area-card p,
+.article-card p,
+.project-card p {
+	color: var(--color-text-secondary);
+	line-height: 1.6;
+}
+
+/* --------------------------------------------------
+   Area Cards
+   Home -> Technical Area
+   -------------------------------------------------- */
+
+.area-card h3 {
+	margin-top: 0;
+}
+
+/* --------------------------------------------------
+   Article Cards
+   Technical Area / Project / Latest Work -> Article
+   -------------------------------------------------- */
+
+.article-card {
+	display: flex;
+	flex-direction: column;
+}
+
+.article-card h3 {
+	margin: 0.25rem 0 0.75rem;
+}
+
+.article-meta,
+.article-card__area {
+	margin: 0;
+
+	color: var(--color-accent-blue);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.article-card__link {
+	margin-top: auto;
+	padding-top: 1.25rem;
+
+	color: var(--color-accent-blue);
+	font-weight: 600;
+}
+
+.article-grid .article-card {
+	min-height: 220px;
+	padding: 1.5rem;
+}
+
+.article-card--placeholder {
+	opacity: 0.5;
+	border-style: dashed;
+}
+
+/* --------------------------------------------------
+   Project Cards
+   Article / Projects Page -> Project
+   -------------------------------------------------- */
+
+.project-card h3 {
+	margin-top: 0;
+}
+
+/* #endregion */
+
+/* #region Responsive */
+
+/* ==================================================
+   Responsive
+   ================================================== */
+
+@media (max-width: 800px) {
+	.article-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
 @media (max-width: 650px) {
 	.about-intro {
 		flex-direction: column;
@@ -303,42 +444,9 @@ nav a:hover {
 	}
 }
 
+/* #endregion */
 
-/* ==================================================
-   Area Cards
-   Home -> Technical Area
-   ================================================== */
-
-.area-card {
-	display: block;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-large);
-	padding: 1.25rem;
-	background: var(--color-panel);
-	color: inherit;
-	text-decoration: none;
-	transition:
-		border-color 0.15s ease,
-		transform 0.15s ease,
-		background 0.15s ease;
-}
-
-.area-card:hover {
-	background: var(--color-panel-hover);
-	border-color: var(--color-border-strong);
-	transform: translateY(-2px);
-}
-
-.area-card h3 {
-	margin-top: 0;
-	color: var(--color-accent-gold);
-}
-
-.area-card p {
-	color: var(--color-text-secondary);
-	line-height: 1.6;
-}
-
+/* #region Misc */
 
 /* ==================================================
    Related Project Links
@@ -360,79 +468,4 @@ nav a:hover {
 	text-decoration: underline;
 }
 
-
-/* ==================================================
-   Article Cards
-   Technical Area / Project -> Article
-   ================================================== */
-
-.article-card {
-	display: block;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-large);
-	padding: 1.25rem;
-	background: var(--color-panel);
-	color: inherit;
-	text-decoration: none;
-	transition:
-		border-color 0.15s ease,
-		background 0.15s ease;
-}
-
-.article-card:hover {
-	background: var(--color-panel-hover);
-	border-color: var(--color-border-strong);
-}
-
-.article-card h3 {
-	margin: 0.25rem 0 0.75rem;
-	color: var(--color-accent-gold);
-}
-
-.article-card p {
-	color: var(--color-text-secondary);
-	line-height: 1.6;
-}
-
-.article-meta {
-	margin: 0;
-	color: var(--color-accent-blue);
-	font-size: 0.8rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
-
-
-/* ==================================================
-   Project Cards
-   Article / Projects Page -> Project
-   ================================================== */
-
-.project-card {
-	display: block;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-large);
-	padding: 1.25rem;
-	background: var(--color-panel);
-	color: inherit;
-	text-decoration: none;
-	transition:
-		border-color 0.15s ease,
-		background 0.15s ease;
-}
-
-.project-card:hover {
-	background: var(--color-panel-hover);
-	border-color: var(--color-border-strong);
-}
-
-.project-card h3 {
-	margin-top: 0;
-	color: var(--color-accent-gold);
-}
-
-.project-card p {
-	color: var(--color-text-secondary);
-	line-height: 1.6;
-}
+/* #endregion */
