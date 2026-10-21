@@ -175,16 +175,19 @@ nav a:hover {
 
 /* #region Content Pages */
 
+
 /* ==================================================
-   Technical Area Landing Pages
+   General Content Styling
    ================================================== */
 
-.topic-header {
+.topic-header,
+.project-header {
 	max-width: var(--width-content);
 	margin-bottom: 3rem;
 }
 
-.topic-section {
+.topic-section,
+.project-section {
 	margin-top: 3rem;
 }
 
@@ -268,23 +271,24 @@ nav a:hover {
 	max-width: var(--width-visualization);
 }
 
+
 /* ==================================================
-   Project Pages
+   Related Content Links
    ================================================== */
 
-.project-area-links {
+.related-links {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.75rem;
 }
 
-.project-area-links a {
+.related-links a {
 	color: var(--color-accent-blue);
 	font-weight: 700;
 	text-decoration: none;
 }
 
-.project-area-links a:hover {
+.related-links a:hover {
 	color: var(--color-accent-gold);
 }
 
@@ -355,6 +359,7 @@ nav a:hover {
 
 .area-card h3,
 .article-card h3,
+.project-card h2,
 .project-card h3 {
 	color: var(--color-accent-gold);
 }
@@ -418,6 +423,7 @@ nav a:hover {
    Article / Projects Page -> Project
    -------------------------------------------------- */
 
+.project-card h2,
 .project-card h3 {
 	margin-top: 0;
 }

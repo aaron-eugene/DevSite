@@ -1,17 +1,35 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+import { getProjectById } from "../../data/projects.js";
+import { technicalAreas } from "../../data/technicalAreas.js";
+
+import {
+	getPublishedArticles,
+	getArticlesByProjectId,
+} from "../../lib/articles.js";
+
+const project = getProjectById("plane-voxel-lab");
+
+if (!project) {
+	throw new Error("Project 'plane-voxel-lab' not found.");
+}
+
+const areas = technicalAreas.filter((area) =>
+	project.areaIds.includes(area.id),
+);
+
+const articles = getArticlesByProjectId(getPublishedArticles(), project.id);
 ---
 
-<BaseLayout title="Plane Voxel Lab | Aaron's Dev Experiments">
+<BaseLayout title={`${project.title} | Aaron's Dev Experiments`}>
 	<section class="project-header">
 		<p class="eyebrow">Project</p>
 
-		<h1>Plane Voxel Lab</h1>
+		<h1>{project.title}</h1>
 
 		<p class="intro">
-			An experimental C++ / OpenGL lab for investigating voxel terrain
-			representation, surface construction, rendering, spatial systems,
-			and approaches to editable terrain.
+			{project.description}
 		</p>
 	</section>
 
@@ -30,11 +48,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 	<section class="project-section">
 		<h2>Technical Areas</h2>
 
-		<div class="project-area-links">
-			<a href="/areas/terrain-systems">Terrain Systems</a>
-			<a href="/areas/rendering">Rendering</a>
-			<a href="/areas/spatial-world-systems">Spatial & World Systems</a>
-			<a href="/areas/tools-debugging">Tools / Debugging</a>
+		<div class="related-links">
+			{areas.map((area) => <a href={area.href}>{area.title}</a>)}
 		</div>
 	</section>
 
@@ -42,29 +57,27 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 		<h2>Articles</h2>
 
 		<div class="article-list">
-			<a class="article-card" href="/articles/xz-columnar-terrain">
-				<p class="article-meta">Terrain Systems</p>
+			{
+				articles.length > 0 ? (
+					articles.map((article) => (
+						<a class="article-card" href={article.href}>
+							<p class="article-meta">{article.area}</p>
 
-				<h3>XZ Columnar Terrain</h3>
+							<h3>{article.title}</h3>
 
-				<p>
-					An experiment in constructing a sealed voxel-owned terrain
-					surface from heightmap-derived planar patches and vertical
-					side fragments.
-				</p>
-			</a>
+							<p>{article.description}</p>
 
-			<a class="article-card" href="/articles/large-world-coordinates">
-				<p class="article-meta">Spatial & World Systems</p>
-
-				<h3>Large-World Coordinates</h3>
-
-				<p>
-					Designing a coordinate system that preserves large-scale
-					world placement without sacrificing local floating-point
-					precision.
-				</p>
-			</a>
+							<span class="article-card__link">
+								Read article →
+							</span>
+						</a>
+					))
+				) : (
+					<p class="empty-state">
+						No articles published for this project yet.
+					</p>
+				)
+			}
 		</div>
 	</section>
 </BaseLayout>

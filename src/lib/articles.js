@@ -6,6 +6,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+import { getProjectById } from "../data/projects.js";
 import { getTechnicalAreaById } from "../data/technicalAreas.js";
 
 
@@ -18,6 +19,7 @@ import { getTechnicalAreaById } from "../data/technicalAreas.js";
  * @property {string} title
  * @property {string} description
  * @property {string} areaId
+ * @property {string} projectId
  * @property {string | null} published
  * @property {boolean} draft
  */
@@ -74,6 +76,14 @@ export function getPublishedArticles() {
 				);
 			}
 
+			const project = getProjectById(metadata.projectId);
+
+			if (!project) {
+				throw new Error(
+					`Unknown project "${metadata.projectId}" in ${path}`
+				);
+			}
+
 			return {
 				...metadata,
 				href: `/articles/${slug}`,
@@ -119,3 +129,16 @@ export function getArticlesByAreaId(articles, areaId) {
 	);
 }
 
+/**
+ * Returns articles belonging to a project.
+ * Preserves the ordering of the supplied collection.
+ *
+ * @param {Article[]} articles
+ * @param {string} projectId
+ * @returns {Article[]}
+ */
+export function getArticlesByProjectId(articles, projectId) {
+	return articles.filter(
+		(article) => article.projectId === projectId
+	);
+}

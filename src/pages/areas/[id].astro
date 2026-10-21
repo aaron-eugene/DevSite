@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 import { technicalAreas } from "../../data/technicalAreas.js";
+import { getProjectsByAreaId } from "../../data/projects.js";
 
 import {
 	getPublishedArticles,
@@ -23,11 +24,12 @@ export function getStaticPaths() {
 		props: {
 			area,
 			articles: getArticlesByAreaId(publishedArticles, area.id),
+			relatedProjects: getProjectsByAreaId(area.id),
 		},
 	}));
 }
 
-const { area, articles } = Astro.props;
+const { area, articles, relatedProjects } = Astro.props;
 ---
 
 <BaseLayout title={`${area.title} | Aaron's Dev Experiments`}>
@@ -66,4 +68,18 @@ const { area, articles } = Astro.props;
 			}
 		</div>
 	</section>
+
+	{
+		relatedProjects.length > 0 && (
+			<section class="topic-section">
+				<h2>Related Projects</h2>
+
+				<div class="related-links">
+					{relatedProjects.map((project) => (
+						<a href={project.href}>{project.title}</a>
+					))}
+				</div>
+			</section>
+		)
+	}
 </BaseLayout>

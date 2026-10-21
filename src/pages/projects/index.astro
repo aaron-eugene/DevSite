@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+import { projects } from "../../data/projects.js";
 ---
 
 <BaseLayout title="Projects | Aaron's Dev Experiments">
@@ -16,15 +18,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 	<section class="topic-section">
 		<div class="project-list">
-			<a class="project-card" href="/projects/plane-voxel-lab">
-				<h2>Plane Voxel Lab</h2>
+			{
+				projects.map((project) => (
+					<a class="project-card" href={project.href}>
+						<h2>{project.title}</h2>
 
-				<p>
-					An experimental C++ / OpenGL lab for exploring voxel
-					terrain, surface construction, rendering, spatial systems,
-					and editable world representations.
-				</p>
-			</a>
+						<p>{project.description}</p>
+					</a>
+				))
+			}
 		</div>
 	</section>
 </BaseLayout>
