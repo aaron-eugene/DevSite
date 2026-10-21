@@ -31,17 +31,62 @@ const articles = getArticlesByProjectId(getPublishedArticles(), project.id);
 		<p class="intro">
 			{project.description}
 		</p>
+
+		{
+			project.repositoryUrl && (
+				<p class="project-repository">
+					<a
+						href={project.repositoryUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						View source on GitHub ↗
+					</a>
+				</p>
+			)
+		}
 	</section>
 
 	<section class="project-section">
 		<h2>About the Project</h2>
 
 		<p>
-			Plane Voxel Lab is a long-running research project built around a
-			series of terrain and graphics experiments. The goal is not to
-			commit to one terrain representation immediately, but to explore
-			different approaches, understand their tradeoffs, and document what
-			works and what does not.
+			Plane Voxel Lab grew out of an idea for a 3D building and crafting
+			game. I wanted a world that could be edited in discrete units, but
+			whose terrain didn't look like a collection of cubes.
+		</p>
+
+		<p>
+			After several refactors in a standalone game project, I decided the
+			saner option was to break the terrain work off into its own lab,
+			where I could develop each approach as an independent experiment.
+			{" "}<em>XZ Columnar Terrain</em>{" "}is one such experiment. This
+			gave me room to explore different ideas, understand their tradeoffs,
+			and carry useful results forward into future projects.
+		</p>
+	</section>
+
+	<section class="project-section">
+		<h2>Current Direction</h2>
+
+		<p>
+			The first major terrain experiment, <em>XZ Columnar Terrain</em>, is
+			complete. It explored a way to construct a sealed, editable terrain
+			surface from individually owned planar pieces. Although the approach
+			worked, it revealed some limitations that make it unsuitable for the
+			kind of terrain I ultimately want to build.
+		</p>
+
+		<p>
+			The next step is to explore an alternative surface construction
+			approach that preserves voxel ownership, and mimics a natural
+			terrain surface with a tile-like appearance. My current idea is to
+			take a marching tetrahedra representation and slice it up via a
+			voxel lattice. However, I can already foresee some challenges with
+			that approach that must be overcome. For instance, what to do with
+			the tiny pieces of terrain that will result from the slicing
+			operation. Only time will tell what direction it goes, look forward
+			to seeing the results!
 		</p>
 	</section>
 

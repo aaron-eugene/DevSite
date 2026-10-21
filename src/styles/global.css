@@ -321,6 +321,21 @@ nav a:hover {
 }
 
 /* ==================================================
+   Project Pages
+   ================================================== */
+
+.project-repository a {
+	color: var(--color-accent-blue);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.project-repository a:hover {
+	color: var(--color-accent-gold);
+	text-decoration: underline;
+}
+
+/* ==================================================
    About Page
    ================================================== */
 
