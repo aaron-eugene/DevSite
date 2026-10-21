@@ -346,6 +346,13 @@ nav a:hover {
 	transform: translateY(-2px);
 }
 
+.area-card--placeholder,
+.article-card--placeholder {
+	opacity: 0.5;
+	border-style: dashed;
+	cursor: default;
+}
+
 .area-card h3,
 .article-card h3,
 .project-card h3 {
@@ -404,11 +411,6 @@ nav a:hover {
 .article-grid .article-card {
 	min-height: 220px;
 	padding: 1.5rem;
-}
-
-.article-card--placeholder {
-	opacity: 0.5;
-	border-style: dashed;
 }
 
 /* --------------------------------------------------

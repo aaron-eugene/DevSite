@@ -1,22 +1,31 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
+import { getTechnicalAreaById } from "../../data/technicalAreas.js";
+
 export const article = {
 	title: "Large-World Coordinates",
 	description:
 		"Designing a coordinate system that preserves large-scale world placement without sacrificing local floating-point precision.",
-	area: "Spatial & World Systems",
-	areaHref: "/areas/spatial-world-systems",
+	areaId: "spatial-systems",
 	published: null,
 	draft: true,
 };
+
+const area = getTechnicalAreaById(article.areaId);
+
+if (!area) {
+	throw new Error(
+		`Unknown technical area "${article.areaId}" in large-world-coordinates.astro`,
+	);
+}
 ---
 
 <BaseLayout title={`${article.title} | Aaron's Dev Experiments`}>
 	<article class="article-page">
 		<header class="article-header">
 			<p class="eyebrow">
-				<a href={article.areaHref}>{article.area}</a>
+				<a href={area.href}>{area.title}</a>
 			</p>
 
 			<h1>{article.title}</h1>

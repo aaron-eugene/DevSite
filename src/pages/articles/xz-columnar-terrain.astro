@@ -5,22 +5,31 @@ import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro"
 import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBasic.astro";
 import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstruction.astro";
 
+import { getTechnicalAreaById } from "../../data/technicalAreas.js";
+
 export const article = {
 	title: "XZ Columnar Terrain",
 	description:
 		"An experiment in constructing a sealed, voxel-owned terrain surface from heightmap-derived planar patches and vertical side fragments.",
-	area: "Terrain Systems",
-	areaHref: "/areas/terrain-systems",
-	published: "2026-10-19",
+	areaId: "terrain-systems",
+	published: "2026-10-21",
 	draft: false,
 };
+
+const area = getTechnicalAreaById(article.areaId);
+
+if (!area) {
+	throw new Error(
+		`Unknown technical area "${article.areaId}" in xz-columnar-terrain.astro`,
+	);
+}
 ---
 
 <BaseLayout title={`${article.title} | Aaron's Dev Experiments`}>
 	<article class="article-page">
 		<header class="article-header">
 			<p class="eyebrow">
-				<a href={article.areaHref}>{article.area}</a>
+				<a href={area.href}>{area.title}</a>
 			</p>
 
 			<h1>{article.title}</h1>
@@ -624,19 +633,19 @@ export const article = {
 				reducing it into simpler geometry.
 			</p>
 		</section>
+
+		<section class="article-project">
+			<h2>Related Project</h2>
+
+			<a class="project-card" href="/projects/plane-voxel-lab">
+				<h3>Plane Voxel Lab</h3>
+
+				<p>
+					An experimental C++ / OpenGL lab for exploring voxel terrain
+					representation, surface construction, rendering, and
+					editable world systems.
+				</p>
+			</a>
+		</section>
 	</article>
-
-	<section class="article-project">
-		<h2>Related Project</h2>
-
-		<a class="project-card" href="/projects/plane-voxel-lab">
-			<h3>Plane Voxel Lab</h3>
-
-			<p>
-				An experimental C++ / OpenGL lab for exploring voxel terrain
-				representation, surface construction, rendering, and editable
-				world systems.
-			</p>
-		</a>
-	</section>
 </BaseLayout>

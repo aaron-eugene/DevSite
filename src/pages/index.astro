@@ -1,25 +1,32 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-import { getPublishedArticles } from "../lib/articles.js";
+import { getPublishedArticles, getPublishedAreaIds } from "../lib/articles.js";
 
-const latestArticles = getPublishedArticles().slice(0, 3);
+import { technicalAreas } from "../data/technicalAreas.js";
+
+const publishedArticles = getPublishedArticles();
+
+const latestArticles = publishedArticles.slice(0, 3);
 
 const placeholderCount = Math.max(0, 3 - latestArticles.length);
+
+const publishedAreaIds = getPublishedAreaIds(publishedArticles);
 ---
 
 <BaseLayout title="Aaron's Dev Experiments">
 	<section class="hero">
-		<p class="eyebrow">Graphics / Terrain Experiments / Game Development</p>
+		<p class="eyebrow">Software Development / Systems / Experimentation</p>
 
 		<h1>
-			A personal dev lab for documenting experiments, prototypes, and
+			A personal dev lab for documenting projects, prototypes, and
 			technical dead ends.
 		</h1>
 
 		<p class="intro">
-			A personal technical notebook for the projects and experiments I
-			spend my free time working through.
+			I share what I'm working on, what I've learned along the way, and
+			the occasional problem that turned out to be more interesting than
+			expected.
 		</p>
 	</section>
 
@@ -55,7 +62,7 @@ const placeholderCount = Math.max(0, 3 - latestArticles.length);
 						<p>
 							{index === 0
 								? "Another technical rabbit hole will eventually end up here."
-								: "Currently occupied by an idea that has not become an article yet."}
+								: "Currently occupied by an idea that has yet to become an article."}
 						</p>
 					</div>
 				))
@@ -67,43 +74,29 @@ const placeholderCount = Math.max(0, 3 - latestArticles.length);
 		<h2>Technical Areas</h2>
 
 		<div class="area-grid">
-			<a class="area-card" href="/areas/terrain-systems">
-				<h3>Terrain Systems</h3>
+			{
+				technicalAreas.map((area) => {
+					const published = publishedAreaIds.has(area.id);
 
-				<p>
-					Research into terrain representation, surface construction,
-					density fields, topology, and approaches to editable world
-					geometry.
-				</p>
-			</a>
+					const clickable = published || import.meta.env.DEV;
 
-			<a class="area-card" href="/areas/rendering">
-				<h3>Rendering</h3>
+					const CardTag = clickable ? "a" : "div";
 
-				<p>
-					Experiments with OpenGL rendering, shaders, lighting,
-					texturing, camera systems, and visual presentation.
-				</p>
-			</a>
+					return (
+						<CardTag
+							class:list={[
+								"area-card",
+								{ "area-card--placeholder": !published },
+							]}
+							href={clickable ? area.href : undefined}
+						>
+							<h3>{area.title}</h3>
 
-			<a class="area-card" href="/areas/spatial-world-systems">
-				<h3>Spatial & World Systems</h3>
-
-				<p>
-					Work on coordinate systems, chunk organization, large-world
-					precision, procedural sampling, and spatial relationships.
-				</p>
-			</a>
-
-			<a class="area-card" href="/areas/tools-debugging">
-				<h3>Tools / Debugging</h3>
-
-				<p>
-					Debug views, diagnostic overlays, development controls,
-					profiling tools, and workflow improvements that support
-					experimentation.
-				</p>
-			</a>
+							<p>{area.description}</p>
+						</CardTag>
+					);
+				})
+			}
 		</div>
 	</section>
 </BaseLayout>
