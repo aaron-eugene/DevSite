@@ -99,6 +99,34 @@ h2 {
 
 /* #endregion */
 
+/* #region Accessability */
+
+/* ==================================================
+   Accessability
+   ================================================== */
+
+a:focus-visible {
+	outline: 2px solid var(--color-accent-blue);
+	outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.area-card,
+	.article-card,
+	.project-card {
+		transition: none;
+	}
+
+	.area-card:hover,
+	.article-card:hover,
+	.project-card:hover {
+		transform: none;
+	}
+}
+
+/* #endregion */
+
 /* #region Site Layout */
 
 /* ==================================================
@@ -418,15 +446,37 @@ nav a:hover {
 	padding: 1.5rem;
 }
 
+
 /* --------------------------------------------------
    Project Cards
    Article / Projects Page -> Project
    -------------------------------------------------- */
 
+.project-list .project-card {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+	align-items: center;
+	gap: 2rem;
+}
+
+.project-card__content {
+	min-width: 0;
+}
+
 .project-card h2,
 .project-card h3 {
 	margin-top: 0;
 }
+
+.project-card__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1600 / 880;
+	object-fit: cover;
+	border-radius: var(--radius-medium);
+}
+
 
 /* #endregion */
 
@@ -449,6 +499,13 @@ nav a:hover {
 
 	.about-photo {
 		width: 180px;
+	}
+
+	@media (max-width: 650px) {
+		.project-list .project-card {
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
 	}
 }
 

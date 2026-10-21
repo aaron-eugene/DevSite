@@ -17,6 +17,7 @@
  * @property {string} title
  * @property {string} description
  * @property {string} href
+ * @property {string} image
  * @property {string[]} areaIds
  */
 
@@ -28,6 +29,7 @@ export const projects = [
 		description:
 			"An experimental C++ / OpenGL lab for investigating voxel terrain representation, surface construction, rendering, spatial systems, and approaches to editable terrain.",
 		href: "/projects/plane-voxel-lab",
+		image: "/images/xz-columnar-preview.jpg",
 		areaIds: [
 			"terrain-systems",
 			"rendering-visualization",

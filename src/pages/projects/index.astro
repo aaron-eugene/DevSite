@@ -21,9 +21,20 @@ import { projects } from "../../data/projects.js";
 			{
 				projects.map((project) => (
 					<a class="project-card" href={project.href}>
-						<h2>{project.title}</h2>
+						<div class="project-card__content">
+							<h2>{project.title}</h2>
 
-						<p>{project.description}</p>
+							<p>{project.description}</p>
+						</div>
+
+						<img
+							class="project-card__image"
+							src={project.image}
+							alt=""
+							width="1600"
+							height="880"
+							loading="lazy"
+						/>
 					</a>
 				))
 			}
