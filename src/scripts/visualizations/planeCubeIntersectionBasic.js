@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { enableKeyboardOrbitControls } from "./keyboardOrbitControls.js";
 
 //========================================================
 // Geometry Constants
@@ -408,19 +409,23 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 	}
 
 	function updateIntersectionStatusDisplay() {
-		const pointCount =
-			intersectionResult.points.length;
+		const pointCount = intersectionResult.points.length;
 
-		if (
-			intersectionResult.intersectionType === "polygon"
-		) {
-			intersectionStatus.textContent =
-				`Polygon · ${pointCount} vertices`;
+		let result;
+
+		if (intersectionResult.intersectionType === "polygon") {
+			result = `Polygon · ${pointCount} vertices`;
 		}
 		else {
-			intersectionStatus.textContent =
-				intersectionResult.intersectionType;
+			result = intersectionResult.intersectionType;
 		}
+
+		intersectionStatus.textContent = result;
+
+		intersectionStatus.setAttribute(
+			"aria-label",
+			`Intersection result: ${result}`
+		);
 	}
 
 	function updatePlaneControls() {
@@ -441,6 +446,16 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 
 		planeElevationValue.textContent =
 			`${planeElevationDegrees.toFixed(0)}°`;
+
+		planeAzimuthSlider.setAttribute(
+			"aria-valuetext",
+			`${planeAzimuthDegrees.toFixed(0)} degrees`
+		);
+
+		planeElevationSlider.setAttribute(
+			"aria-valuetext",
+			`${planeElevationDegrees.toFixed(0)} degrees`
+		);
 	}
 
 	function updateVisualization() {
@@ -540,6 +555,17 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 
 	viewport.appendChild(renderer.domElement);
 
+	renderer.domElement.setAttribute(
+		"aria-label",
+		"Interactive 3D plane and cube intersection visualization"
+	);
+
+	renderer.domElement.setAttribute(
+		"aria-describedby",
+		"plane-cube-instructions"
+	);
+
+
 	//========================================================
 	// Camera Controls
 	//========================================================
@@ -549,9 +575,20 @@ function initializePlaneCubeIntersection(visualizationRoot) {
 		renderer.domElement
 	);
 
+	enableKeyboardOrbitControls(
+		renderer.domElement,
+		controls,
+		camera,
+		{
+			rotationDegrees: 2,
+			zoomFactor: 0.95
+		}
+	);
+
 	controls.target.set(0, 0, 0);
 	controls.update();
 	controls.saveState();
+
 
 	//========================================================
 	// Cube Geometry

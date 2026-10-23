@@ -315,6 +315,16 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 
 	viewport.appendChild(renderer.domElement);
 
+	renderer.domElement.setAttribute(
+		"aria-label",
+		"Interactive 3D terrain surface and voxel lattice"
+	);
+
+	renderer.domElement.setAttribute(
+		"aria-describedby",
+		"surface-grid-instructions"
+	);
+
 	//========================================================
 	// Camera Controls
 	//========================================================
