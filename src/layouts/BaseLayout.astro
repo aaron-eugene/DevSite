@@ -3,7 +3,7 @@ import "../styles/global.css";
 
 const {
 	title = "Aaron’s Dev Experiments",
-	description = "A personal development lab for graphics, terrain experiments, game development, and technical writeups.",
+	description = "A personal development lab for software projects, systems, experiments, and technical writeups.",
 } = Astro.props;
 ---
 
@@ -11,24 +11,26 @@ const {
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<title>{title}</title>
 	</head>
 
 	<body>
+		<a class="skip-link" href="#main-content"> Skip to main content </a>
+
 		<header class="site-header">
 			<a href="/" class="site-title">Aaron’s Dev Experiments</a>
 
-			<nav>
+			<nav aria-label="Primary navigation">
 				<a href="/">Home</a>
 				<a href="/projects">Projects</a>
 				<a href="/about">About</a>
 			</nav>
 		</header>
 
-		<main>
+		<main id="main-content">
 			<slot />
 		</main>
 	</body>

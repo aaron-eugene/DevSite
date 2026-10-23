@@ -5,6 +5,7 @@ import SurfaceVoxelGridBasic from "../../components/SurfaceVoxelGridBasic.astro"
 import PlaneCubeIntersectionBasic from "../../components/PlaneCubeIntersectionBasic.astro";
 import ColumnSurfaceConstruction from "../../components/ColumnSurfaceConstruction.astro";
 
+import { getProjectById } from "../../data/projects.js";
 import { getTechnicalAreaById } from "../../data/technicalAreas.js";
 
 export const article = {
@@ -16,6 +17,12 @@ export const article = {
 	published: "2026-10-21",
 	draft: false,
 };
+
+const project = getProjectById("plane-voxel-lab");
+
+if (!project) {
+	throw new Error("Project 'plane-voxel-lab' not found.");
+}
 
 const area = getTechnicalAreaById(article.areaId);
 
@@ -641,11 +648,7 @@ if (!area) {
 			<a class="project-card" href="/projects/plane-voxel-lab">
 				<h3>Plane Voxel Lab</h3>
 
-				<p>
-					An experimental C++ / OpenGL lab for exploring voxel terrain
-					representation, surface construction, rendering, and
-					editable world systems.
-				</p>
+				<p>{project.description}</p>
 			</a>
 		</section>
 	</article>

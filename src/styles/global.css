@@ -105,7 +105,11 @@ h2 {
    Accessability
    ================================================== */
 
-a:focus-visible {
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
 	outline: 2px solid var(--color-accent-blue);
 	outline-offset: 4px;
 }
@@ -124,6 +128,29 @@ a:focus-visible {
 		transform: none;
 	}
 }
+
+/* --------------------------------------------------
+   Skip Navigation
+   -------------------------------------------------- */
+
+.skip-link {
+	position: fixed;
+	top: -100px;
+	left: 0.75rem;
+	z-index: 1000;
+
+	padding: 0.75rem 1rem;
+
+	background: var(--color-panel);
+	color: var(--color-text);
+	border-radius: var(--radius-small);
+	text-decoration: none;
+}
+
+.skip-link:focus-visible {
+	top: 0.75rem;
+}
+
 
 /* #endregion */
 
@@ -395,7 +422,7 @@ nav a:hover {
 
 .area-card--placeholder,
 .article-card--placeholder {
-	opacity: 0.5;
+	opacity: 0.75;
 	border-style: dashed;
 	cursor: default;
 }

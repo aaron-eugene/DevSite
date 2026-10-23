@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { enableKeyboardOrbitControls } from "./keyboardOrbitControls.js";
 
 //========================================================
 // Constants
@@ -37,7 +38,7 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	// Visualization State
 	//========================================================
 
-	let terrainOffset = -10.0;
+	let terrainOffset = 0.0;
 	let terrainDirty = false;
 
 	const surfaceVoxels = [];
@@ -321,6 +322,16 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	const controls = new OrbitControls(
 		camera,
 		renderer.domElement
+	);
+
+	enableKeyboardOrbitControls(
+		renderer.domElement,
+		controls,
+		camera,
+		{
+			rotationDegrees: 5,
+			zoomFactor: 0.9
+		}
 	);
 
 	controls.target.set(0, 0, 0);
@@ -690,6 +701,38 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	// Visualization Initialization
 	//========================================================
 
+	//--------------------------------------------------------
+	// Initialize Toggle Accessibility States
+	//--------------------------------------------------------
+
+	surfaceButton.setAttribute(
+		"aria-pressed",
+		String(terrainMesh.visible)
+	);
+
+	surfaceVoxelsButton.setAttribute(
+		"aria-pressed",
+		String(surfaceVoxelHighlights.visible)
+	);
+
+	voxelGridButton.setAttribute(
+		"aria-pressed",
+		String(voxelGrid.visible)
+	);
+
+	//--------------------------------------------------------
+	// Initialize Surface Variation Control
+	//--------------------------------------------------------
+
+	surfaceSlider.value = String(terrainOffset);
+
+	surfaceVariationValue.textContent =
+		terrainOffset.toFixed(2);
+
+	//--------------------------------------------------------
+	// Initialize Everything Else
+	//--------------------------------------------------------
+
 	updateSurfaceVoxels();
 	updateSurfaceVoxelGeometry();
 
@@ -707,7 +750,7 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 				Number(surfaceSlider.value);
 
 			surfaceVariationValue.textContent =
-				terrainOffset.toFixed(1);
+				terrainOffset.toFixed(2);
 
 			terrainDirty = true;
 		}
@@ -716,24 +759,36 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	surfaceButton.addEventListener(
 		"click",
 		() => {
-			terrainMesh.visible =
-				!terrainMesh.visible;
+			terrainMesh.visible = !terrainMesh.visible;
+
+			surfaceButton.setAttribute(
+				"aria-pressed",
+				String(terrainMesh.visible)
+			);
 		}
 	);
 
 	surfaceVoxelsButton.addEventListener(
 		"click",
 		() => {
-			surfaceVoxelHighlights.visible =
-				!surfaceVoxelHighlights.visible;
+			surfaceVoxelHighlights.visible = !surfaceVoxelHighlights.visible;
+
+			surfaceVoxelsButton.setAttribute(
+				"aria-pressed",
+				String(surfaceVoxelHighlights.visible)
+			);
 		}
 	);
 
 	voxelGridButton.addEventListener(
 		"click",
 		() => {
-			voxelGrid.visible =
-				!voxelGrid.visible;
+			voxelGrid.visible = !voxelGrid.visible;
+
+			voxelGridButton.setAttribute(
+				"aria-pressed",
+				String(voxelGrid.visible)
+			);
 		}
 	);
 

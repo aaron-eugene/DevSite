@@ -1,37 +1,70 @@
 <div class="surface-voxel-grid">
-	<div class="viewport"></div>
+	<div class="visualization-layout">
+		<div class="viewport"></div>
 
-	<div class="controls">
-		<label>
-			<span class="control-header">
-				<span>Surface Variation</span>
-				<span class="surface-variation-value">0.00</span>
-			</span>
+		<div class="controls">
+			<label>
+				<span class="control-header">
+					<span id="surface-variation-label">Surface Variation</span>
+					<output
+						class="surface-variation-value"
+						for="surface-variation"
+						aria-hidden="true"
+					>
+						0.00
+					</output>
+				</span>
 
-			<input
-				class="surface-variation"
-				type="range"
-				min="-10.0"
-				max="10.0"
-				step="0.5"
-				value="0"
-			/>
-		</label>
+				<input
+					id="surface-variation"
+					class="surface-variation"
+					type="range"
+					min="-10.0"
+					max="10.0"
+					step="0.5"
+					value="0"
+					aria-labelledby="surface-variation-label"
+				/>
+			</label>
 
-		<button class="toggle-surface"> Toggle Surface </button>
+			<button type="button" class="toggle-surface">
+				Toggle Surface
+			</button>
 
-		<button class="toggle-surface-voxels"> Toggle Surface Voxels </button>
+			<button type="button" class="toggle-surface-voxels">
+				Toggle Surface Voxels
+			</button>
 
-		<button class="toggle-voxel-grid"> Toggle Voxel Lattice </button>
+			<button type="button" class="toggle-voxel-grid">
+				Toggle Voxel Lattice
+			</button>
 
-		<button class="reset-camera"> Reset Camera </button>
+			<button class="reset-camera"> Reset Camera </button>
 
-		<div class="num-surface-voxels"></div>
+			<output
+				class="num-surface-voxels"
+				aria-live="polite"
+				aria-atomic="true"
+			>
+				Surface Voxels: 0
+			</output>
+		</div>
 	</div>
+
+	<p id="surface-grid-instructions" class="viewport-instructions">
+		<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the camera.
+		Alternatively, click or Tab to the viewport and use the arrow keys to rotate,
+		and + or - to zoom. Reset Camera restores the original view.
+	</p>
 </div>
 
 <style>
 	.surface-voxel-grid {
+		width: 100%;
+		max-width: var(--width-content);
+	}
+
+	.visualization-layout {
 		display: flex;
 		align-items: flex-start;
 		gap: 24px;
@@ -50,6 +83,22 @@
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+
+	.viewport:focus-within {
+		outline: 2px solid var(--color-accent-blue);
+		outline-offset: 4px;
+	}
+
+	.viewport-instructions {
+		margin: 0.75rem 0;
+		padding: 0 0 0.75rem;
+
+		border-bottom: 1px solid var(--color-border);
+
+		color: var(--color-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.6;
 	}
 
 	.controls {
