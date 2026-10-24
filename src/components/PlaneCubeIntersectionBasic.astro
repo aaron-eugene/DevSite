@@ -205,6 +205,24 @@
 		outline-offset: 4px;
 		border-radius: var(--radius-small);
 	}
+
+	@media (max-width: 650px) {
+		.visualization-layout {
+			flex-direction: column;
+		}
+
+		.viewport {
+			box-sizing: border-box;
+			width: 100%;
+			flex: none;
+		}
+
+		.controls {
+			box-sizing: border-box;
+			width: 100%;
+			min-width: 0;
+		}
+	}
 </style>
 
 <script>

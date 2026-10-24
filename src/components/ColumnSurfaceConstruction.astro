@@ -1,96 +1,128 @@
 <div class="column-surface-construction">
-	<div class="viewport"></div>
+	<div class="visualization-layout">
+		<div class="viewport"></div>
 
-	<div class="controls">
-		<label>
-			<span class="control-header">
-				<span>Noise Position</span>
-				<span class="noise-position-value">0.00</span>
-			</span>
+		<div class="controls">
+			<label>
+				<span class="control-header">
+					<span id="noise-position-label">Noise Position</span>
 
-			<input
-				class="noise-position"
-				type="range"
-				min="-20.0"
-				max="20.0"
-				step="0.25"
-				value="0"
-			/>
-		</label>
-
-		<label class="visibility-control">
-			<input class="toggle-original-surface" type="checkbox" checked />
-			<span>Original Surface</span>
-		</label>
-
-		<label class="visibility-control">
-			<input class="toggle-corner-samples" type="checkbox" />
-			<span>Corner Samples</span>
-		</label>
-
-		<label class="visibility-control">
-			<input class="toggle-bicubic-patch" type="checkbox" />
-			<span>Bicubic Patch</span>
-		</label>
-
-		<label class="visibility-control">
-			<input class="toggle-direct-tangent" type="checkbox" checked />
-			<span class="layer-swatch direct-tangent-swatch" aria-hidden="true"
-			></span>
-			<span>Direct Tangent</span>
-		</label>
-
-		<label class="visibility-control">
-			<input class="toggle-hermite-tangent" type="checkbox" checked />
-			<span class="layer-swatch hermite-tangent-swatch" aria-hidden="true"
-			></span>
-			<span>Hermite Tangent</span>
-		</label>
-
-		<button class="reset-camera"> Reset Camera </button>
-
-		<div class="tangent-samples">
-			<div class="tangent-sample-header">
-				<span></span>
-				<span>y</span>
-				<span>Slope</span>
-			</div>
-
-			<div class="tangent-sample-row">
-				<span class="tangent-sample-label">
-					<span
-						class="layer-swatch direct-tangent-swatch"
+					<output
+						class="noise-position-value"
+						for="noise-position"
 						aria-hidden="true"
 					>
-					</span>
-					<span>Direct</span>
+						0.00
+					</output>
 				</span>
 
-				<span class="direct-tangent-height"> 0.00 </span>
+				<input
+					id="noise-position"
+					class="noise-position"
+					type="range"
+					min="-20.0"
+					max="20.0"
+					step="0.25"
+					value="0"
+					aria-labelledby="noise-position-label"
+				/>
+			</label>
 
-				<span class="direct-tangent-slope"> (0.00, 0.00) </span>
-			</div>
+			<label class="visibility-control">
+				<input
+					class="toggle-original-surface"
+					type="checkbox"
+					checked
+				/>
+				<span>Original Surface</span>
+			</label>
 
-			<div class="tangent-sample-row">
-				<span class="tangent-sample-label">
-					<span
-						class="layer-swatch hermite-tangent-swatch"
-						aria-hidden="true"
-					>
+			<label class="visibility-control">
+				<input class="toggle-corner-samples" type="checkbox" />
+				<span>Corner Samples</span>
+			</label>
+
+			<label class="visibility-control">
+				<input class="toggle-bicubic-patch" type="checkbox" />
+				<span>Bicubic Patch</span>
+			</label>
+
+			<label class="visibility-control">
+				<input class="toggle-direct-tangent" type="checkbox" checked />
+				<span
+					class="layer-swatch direct-tangent-swatch"
+					aria-hidden="true"></span>
+				<span>Direct Tangent</span>
+			</label>
+
+			<label class="visibility-control">
+				<input class="toggle-hermite-tangent" type="checkbox" checked />
+				<span
+					class="layer-swatch hermite-tangent-swatch"
+					aria-hidden="true"></span>
+				<span>Hermite Tangent</span>
+			</label>
+
+			<button type="button" class="reset-camera"> Reset Camera </button>
+
+			<div
+				class="tangent-samples"
+				tabindex="0"
+				aria-label="Tangent sample comparison"
+			>
+				<div class="tangent-sample-header">
+					<span></span>
+					<span>y</span>
+					<span>Slope</span>
+				</div>
+
+				<div class="tangent-sample-row">
+					<span class="tangent-sample-label">
+						<span
+							class="layer-swatch direct-tangent-swatch"
+							aria-hidden="true"
+						>
+						</span>
+						<span>Direct</span>
 					</span>
-					<span>Hermite</span>
-				</span>
 
-				<span class="hermite-tangent-height"> 0.00 </span>
+					<span class="direct-tangent-height"> 0.00 </span>
 
-				<span class="hermite-tangent-slope"> (0.00, 0.00) </span>
+					<span class="direct-tangent-slope"> (0.00, 0.00) </span>
+				</div>
+
+				<div class="tangent-sample-row">
+					<span class="tangent-sample-label">
+						<span
+							class="layer-swatch hermite-tangent-swatch"
+							aria-hidden="true"
+						>
+						</span>
+						<span>Hermite</span>
+					</span>
+
+					<span class="hermite-tangent-height"> 0.00 </span>
+
+					<span class="hermite-tangent-slope"> (0.00, 0.00) </span>
+				</div>
 			</div>
 		</div>
 	</div>
+
+	<p id="column-surface-instructions" class="viewport-instructions">
+		<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the camera.
+		Alternatively, click or Tab to the viewport and use the arrow keys to rotate,
+		and + or - to zoom. Reset Camera restores the original view.
+	</p>
 </div>
 
 <style>
 	.column-surface-construction {
+		width: 100%;
+		max-width: var(--width-content);
+	}
+
+	.visualization-layout {
 		display: flex;
 		align-items: flex-start;
 		gap: 24px;
@@ -109,6 +141,22 @@
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+
+	.viewport:focus-within {
+		outline: 2px solid var(--color-accent-blue);
+		outline-offset: 4px;
+	}
+
+	.viewport-instructions {
+		margin: 0.75rem 0;
+		padding: 0 0 0.75rem;
+
+		border-bottom: 1px solid var(--color-border);
+
+		color: var(--color-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.6;
 	}
 
 	.controls {
@@ -193,6 +241,12 @@
 		font-size: 0.85rem;
 	}
 
+	.tangent-samples:focus-visible {
+		outline: 2px solid var(--color-accent-blue);
+		outline-offset: 4px;
+		border-radius: var(--radius-small);
+	}
+
 	.tangent-sample-header,
 	.tangent-sample-row {
 		display: contents;
@@ -238,6 +292,24 @@
 
 	.hermite-tangent-swatch {
 		background: #4dc3ff;
+	}
+
+	@media (max-width: 650px) {
+		.visualization-layout {
+			flex-direction: column;
+		}
+
+		.viewport {
+			box-sizing: border-box;
+			width: 100%;
+			flex: none;
+		}
+
+		.controls {
+			box-sizing: border-box;
+			width: 100%;
+			min-width: 0;
+		}
 	}
 </style>
 

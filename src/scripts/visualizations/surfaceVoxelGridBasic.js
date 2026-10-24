@@ -326,6 +326,26 @@ function initializeSurfaceVoxelGrid(visualizationRoot) {
 	);
 
 	//========================================================
+	// Viewport Resizing
+	//========================================================
+
+	const resizeObserver = new ResizeObserver(() => {
+		const width = viewport.clientWidth;
+		const height = viewport.clientHeight;
+
+		if (width === 0 || height === 0) {
+			return;
+		}
+
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+
+		renderer.setSize(width, height);
+	});
+
+	resizeObserver.observe(viewport);
+
+	//========================================================
 	// Camera Controls
 	//========================================================
 

@@ -70,23 +70,47 @@ const articles = getArticlesByProjectId(getPublishedArticles(), project.id);
 		<h2>Current Direction</h2>
 
 		<p>
-			The first major terrain experiment, <em>XZ Columnar Terrain</em>, is
-			complete. It explored a way to construct a sealed, editable terrain
-			surface from individually owned planar pieces. Although the approach
-			worked, it revealed some limitations that make it unsuitable for the
-			kind of terrain I ultimately want to build.
+			The {" "}<em>XZ Columnar Terrain</em>{" "} experiment is more or less
+			complete, but it left me with an idea I want to explore further:
+			{" "}<em
+				>defining the domain of a surface piece before constructing its
+				geometry</em
+			>.
 		</p>
 
 		<p>
-			The next step is to explore an alternative surface construction
-			approach that preserves voxel ownership, and mimics a natural
-			terrain surface with a tile-like appearance. My current idea is to
-			take a marching tetrahedra representation and slice it up via a
-			voxel lattice. However, I can already foresee some challenges with
-			that approach that must be overcome. For instance, what to do with
-			the tiny pieces of terrain that will result from the slicing
-			operation. Only time will tell what direction it goes, look forward
-			to seeing the results!
+			In the columnar experiment, I partitioned the two-dimensional domain
+			of a heightmap into square footprints, then constructed an
+			individual terrain piece within each one. This gave the pieces
+			predictable boundaries and consistent coverage, even though the
+			planar geometry introduced some undesirable artifacts.
+		</p>
+
+		<p>
+			The next question is whether that idea can be generalized to
+			arbitrary three-dimensional surfaces. Although a density field takes
+			three spatial coordinates as input, its isosurface is locally
+			two-dimensional. That suggests it may be possible to construct
+			terrain pieces using local two-dimensional domains oriented to the
+			surface, rather than relying on a single global XZ projection.
+		</p>
+
+		<p>
+			There are some significant problems to solve, particularly how to
+			arrange these domains so they cover the surface without unwanted
+			gaps or overlaps, and how to handle transitions between different
+			orientations. I also want to preserve the separation between surface
+			geometry and the underlying voxel structure responsible for
+			ownership and editing.
+		</p>
+
+		<p>
+			For now, time-willing, that's the direction I intend to pursue:
+			{" "}<em
+				>partitioning an arbitrary continuous surface into individually
+				constructible pieces</em
+			>, with the goal of producing terrain that retains its natural shape
+			while remaining visibly discrete.
 		</p>
 	</section>
 

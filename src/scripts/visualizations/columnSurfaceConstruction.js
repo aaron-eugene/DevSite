@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { enableKeyboardOrbitControls } from "./keyboardOrbitControls.js";
 
 //========================================================
 // Geometry Constants
@@ -1352,6 +1353,17 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 
 		hermiteTangentSlopeReadout.textContent =
 			`(${hermiteSample.gradientX.toFixed(2)}, ${hermiteSample.gradientZ.toFixed(2)})`;
+
+		tangentSamples.setAttribute(
+			"aria-label",
+			`Tangent sample comparison. ` +
+			`Direct tangent: height ${directTangentY.toFixed(2)}, ` +
+			`X slope ${directSample.gradientX.toFixed(2)}, ` +
+			`Z slope ${directSample.gradientZ.toFixed(2)}. ` +
+			`Hermite tangent: height ${hermiteTangentY.toFixed(2)}, ` +
+			`X slope ${hermiteSample.gradientX.toFixed(2)}, ` +
+			`Z slope ${hermiteSample.gradientZ.toFixed(2)}.`
+		);
 	}
 
 	function updateVisualization() {
@@ -1452,6 +1464,9 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 			".hermite-tangent-slope"
 		);
 
+	const tangentSamples =
+		visualizationRoot.querySelector(".tangent-samples");
+
 	if (
 		noisePositionSlider === null ||
 		noisePositionValue === null ||
@@ -1464,7 +1479,8 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 		directTangentHeightReadout === null ||
 		directTangentSlopeReadout === null ||
 		hermiteTangentHeightReadout === null ||
-		hermiteTangentSlopeReadout === null
+		hermiteTangentSlopeReadout === null ||
+		tangentSamples === null
 	) {
 		throw new Error(
 			"Column surface construction controls were not found."
@@ -1502,6 +1518,36 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 
 	viewport.appendChild(renderer.domElement);
 
+	renderer.domElement.setAttribute(
+		"aria-label",
+		"Interactive 3D column surface construction visualization"
+	);
+
+	renderer.domElement.setAttribute(
+		"aria-describedby",
+		"column-surface-instructions"
+	);
+
+	//========================================================
+	// Viewport Resizing
+	//========================================================
+
+	const resizeObserver = new ResizeObserver(() => {
+		const width = viewport.clientWidth;
+		const height = viewport.clientHeight;
+
+		if (width === 0 || height === 0) {
+			return;
+		}
+
+		camera.aspect = width / height;
+		camera.updateProjectionMatrix();
+
+		renderer.setSize(width, height);
+	});
+
+	resizeObserver.observe(viewport);
+
 	//========================================================
 	// Camera Controls
 	//========================================================
@@ -1509,6 +1555,16 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 	const controls = new OrbitControls(
 		camera,
 		renderer.domElement
+	);
+
+	enableKeyboardOrbitControls(
+		renderer.domElement,
+		controls,
+		camera,
+		{
+			rotationDegrees: 2,
+			zoomFactor: 0.95
+		}
 	);
 
 	controls.target.set(0, 0, 0);
@@ -1600,7 +1656,7 @@ function initializeColumnSurfaceConstruction(visualizationRoot) {
 
 	const bicubicPatchMaterial =
 		new THREE.MeshBasicMaterial({
-			color: 0x63d98b,
+			color: 0xff7fb6,
 			side: THREE.DoubleSide,
 			transparent: true,
 			opacity: 0.5
