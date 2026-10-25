@@ -87,14 +87,30 @@
 		</div>
 	</div>
 
-	<p id="plane-cube-instructions" class="viewport-instructions">
-		<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the camera.
-		Alternatively, click or Tab to the viewport and use the arrow keys to rotate,
-		and + or - to zoom. Reset Camera restores the original view.
-	</p>
+	<div class="visualization-footer">
+		<p id="plane-cube-instructions" class="viewport-instructions">
+			<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the
+			camera. Alternatively, click or Tab to the viewport and use the arrow
+			keys to rotate, and + or - to zoom. Reset Camera restores the original
+			view.
+		</p>
+
+		<a
+			class="visualization-source"
+			href="https://github.com/aaron-eugene/DevSite/blob/main/src/scripts/visualizations/planeCubeIntersectionBasic.js"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			View source on GitHub
+		</a>
+	</div>
 </div>
 
 <style>
+	/*========================================================
+		Visualization Layout
+	========================================================*/
+
 	.plane-cube-intersection {
 		width: 100%;
 		max-width: var(--width-content);
@@ -105,6 +121,10 @@
 		align-items: flex-start;
 		gap: 24px;
 	}
+
+	/*========================================================
+		Viewport
+	========================================================*/
 
 	.viewport {
 		width: 640px;
@@ -126,16 +146,9 @@
 		outline-offset: 4px;
 	}
 
-	.viewport-instructions {
-		margin: 0.75rem 0;
-		padding: 0 0 0.75rem;
-
-		border-bottom: 1px solid var(--color-border);
-
-		color: var(--color-text-secondary);
-		font-size: 0.9rem;
-		line-height: 1.6;
-	}
+	/*========================================================
+		Control Panel
+	========================================================*/
 
 	.controls {
 		display: flex;
@@ -205,6 +218,42 @@
 		outline-offset: 4px;
 		border-radius: var(--radius-small);
 	}
+
+	/*========================================================
+		Visualization Footer
+	========================================================*/
+
+	.visualization-footer {
+		margin: 0.75rem 0;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.viewport-instructions {
+		display: inline;
+		margin: 0;
+		color: var(--color-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.visualization-source {
+		display: inline;
+		margin-left: 0.5rem;
+		color: var(--color-accent-blue);
+		font-size: 0.9rem;
+		line-height: 1.6;
+		text-decoration: none;
+	}
+
+	.visualization-source:hover {
+		color: var(--color-accent-gold);
+		text-decoration: underline;
+	}
+
+	/*========================================================
+		Responsive Layout
+	========================================================*/
 
 	@media (max-width: 650px) {
 		.visualization-layout {

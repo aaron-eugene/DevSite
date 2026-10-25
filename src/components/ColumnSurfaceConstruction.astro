@@ -109,14 +109,30 @@
 		</div>
 	</div>
 
-	<p id="column-surface-instructions" class="viewport-instructions">
-		<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the camera.
-		Alternatively, click or Tab to the viewport and use the arrow keys to rotate,
-		and + or - to zoom. Reset Camera restores the original view.
-	</p>
+	<div class="visualization-footer">
+		<p id="column-surface-instructions" class="viewport-instructions">
+			<strong>3D controls:</strong> Use the mouse to rotate, pan, and zoom the
+			camera. Alternatively, click or Tab to the viewport and use the arrow
+			keys to rotate, and + or - to zoom. Reset Camera restores the original
+			view.
+		</p>
+
+		<a
+			class="visualization-source"
+			href="https://github.com/aaron-eugene/DevSite/blob/main/src/scripts/visualizations/columnSurfaceConstruction.js"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			View source on GitHub
+		</a>
+	</div>
 </div>
 
 <style>
+	/*========================================================
+		Visualization Layout
+	========================================================*/
+
 	.column-surface-construction {
 		width: 100%;
 		max-width: var(--width-content);
@@ -127,6 +143,10 @@
 		align-items: flex-start;
 		gap: 24px;
 	}
+
+	/*========================================================
+		Viewport
+	========================================================*/
 
 	.viewport {
 		width: 640px;
@@ -148,16 +168,9 @@
 		outline-offset: 4px;
 	}
 
-	.viewport-instructions {
-		margin: 0.75rem 0;
-		padding: 0 0 0.75rem;
-
-		border-bottom: 1px solid var(--color-border);
-
-		color: var(--color-text-secondary);
-		font-size: 0.9rem;
-		line-height: 1.6;
-	}
+	/*========================================================
+		Control Panel
+	========================================================*/
 
 	.controls {
 		display: flex;
@@ -169,6 +182,12 @@
 		border-radius: var(--radius-medium);
 		background: var(--color-panel);
 		color: var(--color-text-secondary);
+	}
+
+	.controls > label:not(.visibility-control) {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 	}
 
 	.control-header {
@@ -183,6 +202,20 @@
 		margin: 0;
 		accent-color: var(--color-accent-blue);
 		cursor: pointer;
+	}
+
+	.visibility-control {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 8px;
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	.visibility-control input {
+		margin: 0;
+		accent-color: var(--color-accent-blue);
 	}
 
 	.controls button {
@@ -210,25 +243,9 @@
 		outline-offset: 2px;
 	}
 
-	.controls > label:not(.visibility-control) {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.visibility-control {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 8px;
-		color: var(--color-text);
-		cursor: pointer;
-	}
-
-	.visibility-control input {
-		margin: 0;
-		accent-color: var(--color-accent-blue);
-	}
+	/*--------------------------------------------------------
+		Tangent Sample Comparison
+	--------------------------------------------------------*/
 
 	.tangent-samples {
 		display: grid;
@@ -278,6 +295,10 @@
 		white-space: nowrap;
 	}
 
+	/*--------------------------------------------------------
+		Layer Swatches
+	--------------------------------------------------------*/
+
 	.layer-swatch {
 		display: inline-block;
 		width: 10px;
@@ -293,6 +314,42 @@
 	.hermite-tangent-swatch {
 		background: #4dc3ff;
 	}
+
+	/*========================================================
+		Visualization Footer
+	========================================================*/
+
+	.visualization-footer {
+		margin: 0.75rem 0;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.viewport-instructions {
+		display: inline;
+		margin: 0;
+		color: var(--color-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.visualization-source {
+		display: inline;
+		margin-left: 0.5rem;
+		color: var(--color-accent-blue);
+		font-size: 0.9rem;
+		line-height: 1.6;
+		text-decoration: none;
+	}
+
+	.visualization-source:hover {
+		color: var(--color-accent-gold);
+		text-decoration: underline;
+	}
+
+	/*========================================================
+		Responsive Layout
+	========================================================*/
 
 	@media (max-width: 650px) {
 		.visualization-layout {
