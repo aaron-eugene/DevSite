@@ -1,43 +1,43 @@
-# Astro Starter Kit: Minimal
+# Aaron's Dev Lab
 
-```sh
-npm create astro@latest -- --template minimal
+Source code for [aaronsdevlab.com](https://aaronsdevlab.com), my personal development website.
+
+The site serves as a technical journal for documenting software projects, experiments, implementation details, and lessons learned. Its current focus is on voxel terrain research, computational geometry, and real-time rendering.
+
+## Technologies
+
+- **Astro** — Static site generation and page components
+- **JavaScript** — Interactive functionality and visualization logic
+- **Three.js** — Interactive 3D rendering
+- **CSS** — Responsive layouts and styling
+
+## Interactive Visualizations
+
+The site includes several interactive demonstrations developed to accompany technical articles:
+
+- **Surface Voxel Grid** — Visualizes how a continuous terrain surface intersects a voxel grid.
+- **Plane–Cube Intersection** — Demonstrates plane intersections with cube geometry and the resulting polygons.
+- **Column Surface Construction** — Explores surface interpolation and tangent estimation.
+
+The visualizations include mouse, touch, and keyboard camera controls, along with accessibility features.
+
+## Development
+
+Install dependencies and start the local development server:
+
+```bash
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+To generate a production build:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+npm run build
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+The site is statically generated and deployed through Cloudflare Pages.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Live Website
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+**[aaronsdevlab.com](https://aaronsdevlab.com)**
